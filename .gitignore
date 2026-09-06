@@ -1,0 +1,36 @@
+# --- Secrets & local environment -------------------------------------------
+.env
+.env.*
+!.env.example
+cloudflared/*.json
+cloudflared/cert.pem
+cloudflared/config.yml
+!cloudflared/config.yml.example
+*.pem
+*.key
+
+# --- Generated legal artefacts & audit vault (NEVER commit) -----------------
+generated/*
+!generated/.gitkeep
+!generated/README.md
+
+# --- Python -----------------------------------------------------------------
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env.venv
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# --- OS / editor ------------------------------------------------------------
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp

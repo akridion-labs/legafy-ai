@@ -1,0 +1,91 @@
+{
+  "code": "IN-TG",
+  "display_name": "Telangana",
+  "aliases": ["telangana", "tg", "ts", "hyderabad", "in-tg", "in-ts"],
+  "isolation_group": "IN-TG",
+  "tier": "state",
+  "seed_compiled_on": "2026-09-06",
+  "verification_status": "SEED_UNVERIFIED",
+  "verification_note": "Telangana is a fully segregated code path. Andhra Pradesh entries must never be substituted here even where the two states inherited a common predecessor statute — post-reorganisation amendments, rules, notifications and portals diverge.",
+  "source_whitelist": [
+    "https://labour.telangana.gov.in",
+    "https://ipass.telangana.gov.in",
+    "https://tgct.gov.in",
+    "https://www.telangana.gov.in",
+    "https://www.indiacode.nic.in"
+  ],
+  "instruments": [
+    {
+      "id": "TG-SE-1988",
+      "title": "Telangana Shops and Establishments Act, 1988",
+      "domain": "labour",
+      "authority": "Labour Department, Government of Telangana",
+      "citation_url": "https://labour.telangana.gov.in",
+      "applies_when": ["has_workplace_in_state"],
+      "obligations": [
+        {"key": "establishment_registration", "summary": "Shops and commercial establishments operating in the state register with the state labour department.", "lane": "GREEN"},
+        {"key": "working_hours_and_leave", "summary": "Working hours, weekly holidays, overtime and leave entitlements are set by state rules and differ from neighbouring states.", "lane": "AMBER"},
+        {"key": "night_shift_conditions", "summary": "Permission conditions for night working, particularly for women employees, are state-notified.", "lane": "AMBER"}
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    },
+    {
+      "id": "TG-PT-1987",
+      "title": "Telangana Tax on Professions, Trades, Callings and Employments Act, 1987",
+      "domain": "taxation",
+      "authority": "Commercial Taxes Department, Government of Telangana",
+      "citation_url": "https://tgct.gov.in",
+      "applies_when": ["employs_persons", "carries_on_profession_in_state"],
+      "obligations": [
+        {"key": "pt_registration", "summary": "Employer registration and employee enrolment for professional tax are state-specific and do not transfer across state lines.", "lane": "GREEN"},
+        {"key": "pt_remittance", "summary": "Periodic deduction and remittance follow the state's own slab notification.", "lane": "AMBER"}
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    },
+    {
+      "id": "TG-LWF-1987",
+      "title": "Telangana Labour Welfare Fund Act, 1987",
+      "domain": "labour",
+      "authority": "Telangana Labour Welfare Board",
+      "citation_url": "https://labour.telangana.gov.in",
+      "applies_when": ["employs_persons"],
+      "obligations": [
+        {"key": "lwf_contribution", "summary": "Employer and employee welfare-fund contributions are payable on the state's own cycle.", "lane": "GREEN"}
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    },
+    {
+      "id": "TG-CLRA-RULES",
+      "title": "Telangana rules under the Contract Labour (Regulation and Abolition) framework",
+      "domain": "labour",
+      "authority": "Labour Department, Government of Telangana",
+      "citation_url": "https://labour.telangana.gov.in",
+      "applies_when": ["engages_contract_labour"],
+      "obligations": [
+        {"key": "principal_employer_registration", "summary": "Engaging contract labour above the state threshold requires principal-employer registration and contractor licensing under state rules.", "lane": "AMBER"}
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    },
+    {
+      "id": "TG-IPASS",
+      "title": "Telangana State Industrial Project Approval and Self-Certification System (TS-iPASS) framework",
+      "domain": "business_registration",
+      "authority": "Industries and Commerce Department, Government of Telangana",
+      "citation_url": "https://ipass.telangana.gov.in",
+      "applies_when": ["establishes_industrial_unit"],
+      "obligations": [
+        {"key": "single_window_clearance", "summary": "Industrial approvals in the state are routed through the state single-window system rather than through central portals.", "lane": "GREEN"}
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    }
+  ],
+  "state_escalation_triggers": [
+    "Deploying employees across Telangana and another state under one payroll — professional tax, welfare fund and shops-and-establishments registration do not travel across the border.",
+    "Relying on a pre-2014 combined Andhra Pradesh precedent without confirming its post-reorganisation status in Telangana."
+  ]
+}

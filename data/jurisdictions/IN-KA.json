@@ -1,0 +1,62 @@
+{
+  "code": "IN-KA",
+  "display_name": "Karnataka",
+  "aliases": ["karnataka", "ka", "in-ka", "bengaluru", "bangalore"],
+  "isolation_group": "IN-KA",
+  "tier": "state",
+  "seed_compiled_on": "2026-09-06",
+  "verification_status": "SEED_UNVERIFIED",
+  "verification_note": "Karnataka is a fully segregated code path with its own labour, professional tax and welfare-fund instruments and its own filing portals.",
+  "source_whitelist": [
+    "https://labour.karnataka.gov.in",
+    "https://ctax.kar.nic.in",
+    "https://ebiz.karnataka.gov.in",
+    "https://www.karnataka.gov.in",
+    "https://www.indiacode.nic.in"
+  ],
+  "instruments": [
+    {
+      "id": "KA-SCE-1961",
+      "title": "Karnataka Shops and Commercial Establishments Act, 1961",
+      "domain": "labour",
+      "authority": "Department of Labour, Government of Karnataka",
+      "citation_url": "https://labour.karnataka.gov.in",
+      "applies_when": ["has_workplace_in_state"],
+      "obligations": [
+        {"key": "establishment_registration", "summary": "Commercial establishments in the state register under the Karnataka Act and its rules.", "lane": "GREEN"},
+        {"key": "it_sector_exemptions", "summary": "Karnataka has historically issued conditional exemptions for IT/ITES establishments; the current notification and its conditions must be read before relying on any exemption.", "lane": "AMBER"}
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    },
+    {
+      "id": "KA-PT-1976",
+      "title": "Karnataka Tax on Professions, Trades, Callings and Employments Act, 1976",
+      "domain": "taxation",
+      "authority": "Commercial Taxes Department, Government of Karnataka",
+      "citation_url": "https://ctax.kar.nic.in",
+      "applies_when": ["employs_persons", "carries_on_profession_in_state"],
+      "obligations": [
+        {"key": "pt_registration", "summary": "Karnataka professional tax registration and remittance follow the state's own notification.", "lane": "GREEN"}
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    },
+    {
+      "id": "KA-LWF-1965",
+      "title": "Karnataka Labour Welfare Fund Act, 1965",
+      "domain": "labour",
+      "authority": "Karnataka Labour Welfare Board",
+      "citation_url": "https://labour.karnataka.gov.in",
+      "applies_when": ["employs_persons"],
+      "obligations": [
+        {"key": "lwf_contribution", "summary": "Annual welfare fund contribution is payable to the Karnataka board.", "lane": "GREEN"}
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    }
+  ],
+  "state_escalation_triggers": [
+    "Relying on an IT/ITES exemption notification without confirming it is currently in force and that the conditions attached to it are met."
+  ]
+}

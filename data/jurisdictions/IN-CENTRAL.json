@@ -1,0 +1,368 @@
+{
+  "code": "IN-CENTRAL",
+  "display_name": "India — Union (Central) Framework",
+  "isolation_group": "IN-CENTRAL",
+  "tier": "union",
+  "seed_compiled_on": "2026-09-06",
+  "verification_status": "SEED_UNVERIFIED",
+  "verification_note": "Instrument titles and years are seed metadata compiled for routing. Section numbers, sub-clauses, thresholds and penalty amounts are deliberately absent and must be populated only from the whitelisted primary sources below by a reviewer before this file is marked VERIFIED.",
+  "source_whitelist": [
+    "https://www.indiacode.nic.in",
+    "https://www.mca.gov.in",
+    "https://www.meity.gov.in",
+    "https://labour.gov.in",
+    "https://www.incometax.gov.in",
+    "https://www.gst.gov.in",
+    "https://egazette.gov.in"
+  ],
+  "instruments": [
+    {
+      "id": "IN-CO-2013",
+      "title": "Companies Act, 2013",
+      "domain": "corporate_structure",
+      "authority": "Ministry of Corporate Affairs",
+      "citation_url": "https://www.mca.gov.in",
+      "applies_when": [
+        "entity_type:private_limited",
+        "entity_type:opc",
+        "entity_type:public_limited"
+      ],
+      "obligations": [
+        {
+          "key": "incorporation_filing",
+          "summary": "Incorporation, name reservation and constitutional documents are filed with the Registrar of Companies through the MCA portal.",
+          "lane": "GREEN"
+        },
+        {
+          "key": "statutory_registers",
+          "summary": "Statutory registers, board minutes and annual filings must be maintained on an ongoing basis.",
+          "lane": "GREEN"
+        },
+        {
+          "key": "share_allotment",
+          "summary": "Issue and allotment of securities, including to founders and investors, is a regulated filing event.",
+          "lane": "AMBER",
+          "applies_when": [
+            "securities_or_investment",
+            "foreign_investment"
+          ]
+        },
+        {
+          "key": "capital_structure_complex",
+          "summary": "Multi-class cap tables, convertible instruments and ESOP pools interact with securities rules.",
+          "lane": "RED",
+          "applies_when": [
+            "securities_or_investment",
+            "foreign_investment"
+          ]
+        }
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    },
+    {
+      "id": "IN-LLP-2008",
+      "title": "Limited Liability Partnership Act, 2008",
+      "domain": "corporate_structure",
+      "authority": "Ministry of Corporate Affairs",
+      "citation_url": "https://www.mca.gov.in",
+      "applies_when": [
+        "entity_type:llp"
+      ],
+      "obligations": [
+        {
+          "key": "llp_incorporation",
+          "summary": "LLP incorporation and the LLP agreement are filed with the Registrar.",
+          "lane": "GREEN"
+        },
+        {
+          "key": "annual_return",
+          "summary": "Annual return and statement of account and solvency filings are recurring obligations.",
+          "lane": "GREEN"
+        }
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    },
+    {
+      "id": "IN-DPDP-2023",
+      "title": "Digital Personal Data Protection Act, 2023",
+      "domain": "data_protection",
+      "authority": "Ministry of Electronics and Information Technology",
+      "citation_url": "https://www.meity.gov.in",
+      "applies_when": [
+        "processes_personal_data"
+      ],
+      "obligations": [
+        {
+          "key": "notice_and_consent",
+          "summary": "Personal data processing is built around notice and a lawful basis; product surfaces must expose that notice.",
+          "lane": "AMBER"
+        },
+        {
+          "key": "data_principal_rights",
+          "summary": "Mechanisms for access, correction, erasure and grievance redressal must exist in the product.",
+          "lane": "AMBER"
+        },
+        {
+          "key": "childrens_data",
+          "summary": "Processing personal data of children carries heightened restrictions.",
+          "lane": "RED",
+          "applies_when": [
+            "processes_children_data"
+          ]
+        },
+        {
+          "key": "significant_data_fiduciary",
+          "summary": "Classification as a Significant Data Fiduciary attaches additional governance duties.",
+          "lane": "AMBER"
+        },
+        {
+          "key": "cross_border_transfer",
+          "summary": "Transfer of personal data outside India is subject to government restriction and must be assessed instrument by instrument.",
+          "lane": "RED",
+          "applies_when": [
+            "cross_border_data_transfer",
+            "cross_border_payments"
+          ]
+        },
+        {
+          "key": "breach_notification",
+          "summary": "Personal data breaches carry notification duties to the Board and affected principals.",
+          "lane": "AMBER"
+        }
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED",
+      "commencement_note": "Provisions and subordinate rules commence by notification; the operative date for each duty must be confirmed against the Gazette before it is relied upon."
+    },
+    {
+      "id": "IN-IT-2000",
+      "title": "Information Technology Act, 2000",
+      "domain": "data_protection",
+      "authority": "Ministry of Electronics and Information Technology",
+      "citation_url": "https://www.meity.gov.in",
+      "applies_when": [
+        "operates_digital_service"
+      ],
+      "obligations": [
+        {
+          "key": "intermediary_posture",
+          "summary": "Platforms that host third-party content must determine their intermediary status and the due-diligence conditions attached to it.",
+          "lane": "AMBER"
+        },
+        {
+          "key": "reasonable_security",
+          "summary": "Bodies corporate handling sensitive personal data are expected to maintain reasonable security practices.",
+          "lane": "AMBER"
+        },
+        {
+          "key": "cert_in_directions",
+          "summary": "Cyber-incident reporting and log-retention directions issued under this framework apply to service providers.",
+          "lane": "AMBER"
+        }
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    },
+    {
+      "id": "IN-GST-2017",
+      "title": "Central Goods and Services Tax Act, 2017",
+      "domain": "taxation",
+      "authority": "Central Board of Indirect Taxes and Customs",
+      "citation_url": "https://www.gst.gov.in",
+      "applies_when": [
+        "supplies_goods_or_services"
+      ],
+      "obligations": [
+        {
+          "key": "registration",
+          "summary": "Registration is threshold- and activity-driven and is state-wise, not national.",
+          "lane": "AMBER"
+        },
+        {
+          "key": "invoicing_returns",
+          "summary": "Tax invoices and periodic returns are recurring compliance events.",
+          "lane": "GREEN"
+        },
+        {
+          "key": "multi_state_gateway",
+          "summary": "Supplies across multiple states create separate state registrations and place-of-supply analysis.",
+          "lane": "RED",
+          "applies_when": [
+            "multi_state_operations"
+          ]
+        },
+        {
+          "key": "ecommerce_operator",
+          "summary": "Acting as an electronic commerce operator collecting on behalf of sellers attaches distinct duties.",
+          "lane": "RED",
+          "applies_when": [
+            "sells_to_consumers",
+            "supplies_goods_or_services"
+          ]
+        }
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    },
+    {
+      "id": "IN-ITAX-1961",
+      "title": "Income-tax Act, 1961",
+      "domain": "taxation",
+      "authority": "Central Board of Direct Taxes",
+      "citation_url": "https://www.incometax.gov.in",
+      "applies_when": [
+        "any_entity"
+      ],
+      "obligations": [
+        {
+          "key": "pan_tan",
+          "summary": "Permanent Account Number and, where withholding applies, Tax Deduction Account Number are prerequisites to operating.",
+          "lane": "GREEN"
+        },
+        {
+          "key": "withholding",
+          "summary": "Payments to contractors, employees and non-residents may attract withholding obligations.",
+          "lane": "AMBER",
+          "applies_when": [
+            "employs_persons",
+            "cross_border_payments"
+          ]
+        },
+        {
+          "key": "esop_perquisite",
+          "summary": "Employee stock option taxation interacts with vesting design and must be modelled with an adviser.",
+          "lane": "RED",
+          "applies_when": [
+            "securities_or_investment",
+            "foreign_investment"
+          ]
+        }
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    },
+    {
+      "id": "IN-WAGES-2019",
+      "title": "Code on Wages, 2019",
+      "domain": "labour",
+      "authority": "Ministry of Labour and Employment",
+      "citation_url": "https://labour.gov.in",
+      "applies_when": [
+        "employs_persons"
+      ],
+      "obligations": [
+        {
+          "key": "wage_payment",
+          "summary": "Wage payment, minimum wage and wage-period rules apply to employed persons.",
+          "lane": "AMBER"
+        }
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED",
+      "commencement_note": "Labour code commencement and the corresponding state rules are notified separately; the applicable instrument in a given state may still be the predecessor Act. Confirm before relying on this entry."
+    },
+    {
+      "id": "IN-EPF-1952",
+      "title": "Employees' Provident Funds and Miscellaneous Provisions Act, 1952",
+      "domain": "labour",
+      "authority": "Employees' Provident Fund Organisation",
+      "citation_url": "https://www.epfindia.gov.in",
+      "applies_when": [
+        "employs_persons"
+      ],
+      "obligations": [
+        {
+          "key": "epf_coverage",
+          "summary": "Establishment coverage is headcount- and activity-driven; registration and monthly contribution follow coverage.",
+          "lane": "AMBER"
+        }
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    },
+    {
+      "id": "IN-ESI-1948",
+      "title": "Employees' State Insurance Act, 1948",
+      "domain": "labour",
+      "authority": "Employees' State Insurance Corporation",
+      "citation_url": "https://www.esic.gov.in",
+      "applies_when": [
+        "employs_persons"
+      ],
+      "obligations": [
+        {
+          "key": "esi_coverage",
+          "summary": "Coverage depends on headcount, wage ceiling and whether the area is implemented for ESI.",
+          "lane": "AMBER"
+        }
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    },
+    {
+      "id": "IN-POSH-2013",
+      "title": "Sexual Harassment of Women at Workplace (Prevention, Prohibition and Redressal) Act, 2013",
+      "domain": "labour",
+      "authority": "Ministry of Women and Child Development",
+      "citation_url": "https://www.indiacode.nic.in",
+      "applies_when": [
+        "employs_persons"
+      ],
+      "obligations": [
+        {
+          "key": "internal_committee",
+          "summary": "Workplaces above the prescribed employee count must constitute an internal committee and publish a policy.",
+          "lane": "AMBER"
+        }
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    },
+    {
+      "id": "IN-FEMA-1999",
+      "title": "Foreign Exchange Management Act, 1999",
+      "domain": "cross_border",
+      "authority": "Reserve Bank of India",
+      "citation_url": "https://www.rbi.org.in",
+      "applies_when": [
+        "foreign_investment",
+        "cross_border_payments"
+      ],
+      "obligations": [
+        {
+          "key": "fdi_reporting",
+          "summary": "Inbound foreign investment carries pricing, sectoral and reporting conditions.",
+          "lane": "RED"
+        },
+        {
+          "key": "payment_aggregation",
+          "summary": "Holding or routing customer funds, escrow and payment aggregation are separately regulated activities.",
+          "lane": "RED"
+        }
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    },
+    {
+      "id": "IN-CPA-2019",
+      "title": "Consumer Protection Act, 2019",
+      "domain": "consumer",
+      "authority": "Ministry of Consumer Affairs, Food and Public Distribution",
+      "citation_url": "https://consumeraffairs.nic.in",
+      "applies_when": [
+        "sells_to_consumers"
+      ],
+      "obligations": [
+        {
+          "key": "ecommerce_disclosures",
+          "summary": "Consumer-facing digital commerce carries disclosure, grievance-officer and unfair-trade-practice constraints.",
+          "lane": "AMBER"
+        }
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    }
+  ]
+}

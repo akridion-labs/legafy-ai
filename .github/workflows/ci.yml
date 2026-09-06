@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: test (py${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Lint (ruff)
+        run: ruff check .
+
+      - name: Test (pytest)
+        run: pytest -q
+
+  docker:
+    name: docker image boots
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker build -t legafy-ai:ci .
+
+      - name: Run container
+        run: |
+          docker run --rm \
+            --name legafy-ci \
+            -e LEGAFY_ENV=development \
+            -e LEGAFY_BOOTSTRAP_TOKENS_ENABLED=true \
+            -p 127.0.0.1:8000:8000 \
+            -d legafy-ai:ci
+
+      - name: Wait for /healthz (fail after 60s)
+        run: |
+          for i in $(seq 1 30); do
+            if curl -fsS --max-time 2 http://127.0.0.1:8000/healthz >/dev/null 2>&1; then
+              echo "Healthy after ${i}x2s."
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "API did not become healthy within 60s." >&2
+          docker logs legafy-ci || true
+          exit 1
+
+      - name: Stop container
+        if: always()
+        run: docker stop legafy-ci || true
+
+  shellcheck:
+    name: shellcheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # ubuntu-latest runner images ship shellcheck preinstalled; no extra
+      # action/dependency needed.
+      - name: Run shellcheck
+        run: shellcheck setup_tunnel.sh scripts/*.sh

@@ -1,0 +1,76 @@
+{
+  "code": "IN-MH",
+  "display_name": "Maharashtra",
+  "aliases": ["maharashtra", "mh", "in-mh", "mumbai", "pune", "nagpur"],
+  "isolation_group": "IN-MH",
+  "tier": "state",
+  "seed_compiled_on": "2026-09-06",
+  "verification_status": "SEED_UNVERIFIED",
+  "verification_note": "Maharashtra is a fully segregated code path. Its shops-and-establishments framework was re-enacted in 2017 and diverges structurally from the 1988-era statutes of Telangana and Andhra Pradesh.",
+  "source_whitelist": [
+    "https://mahakamgar.maharashtra.gov.in",
+    "https://www.mahagst.gov.in",
+    "https://maitri.mahaonline.gov.in",
+    "https://www.maharashtra.gov.in",
+    "https://www.indiacode.nic.in"
+  ],
+  "instruments": [
+    {
+      "id": "MH-SE-2017",
+      "title": "Maharashtra Shops and Establishments (Regulation of Employment and Conditions of Service) Act, 2017",
+      "domain": "labour",
+      "authority": "Labour Department, Government of Maharashtra",
+      "citation_url": "https://mahakamgar.maharashtra.gov.in",
+      "applies_when": ["has_workplace_in_state"],
+      "obligations": [
+        {"key": "registration_or_intimation", "summary": "Establishments register or file intimation depending on worker count under the 2017 framework — a different structure from the 1988-era Acts used in Telangana and Andhra Pradesh.", "lane": "GREEN"},
+        {"key": "conditions_of_service", "summary": "Hours, leave, weekly offs and facilities obligations follow Maharashtra rules.", "lane": "AMBER"}
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    },
+    {
+      "id": "MH-PT-1975",
+      "title": "Maharashtra State Tax on Professions, Trades, Callings and Employments Act, 1975",
+      "domain": "taxation",
+      "authority": "Department of Goods and Services Tax, Government of Maharashtra",
+      "citation_url": "https://www.mahagst.gov.in",
+      "applies_when": ["employs_persons", "carries_on_profession_in_state"],
+      "obligations": [
+        {"key": "pt_enrolment_and_registration", "summary": "Maharashtra operates separate enrolment and registration certificates with their own filing calendar.", "lane": "GREEN"}
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    },
+    {
+      "id": "MH-LWF-1953",
+      "title": "Bombay Labour Welfare Fund Act, 1953 (as applicable in Maharashtra)",
+      "domain": "labour",
+      "authority": "Maharashtra Labour Welfare Board",
+      "citation_url": "https://mahakamgar.maharashtra.gov.in",
+      "applies_when": ["employs_persons"],
+      "obligations": [
+        {"key": "lwf_contribution", "summary": "Welfare fund contributions follow the Maharashtra board's half-yearly cycle.", "lane": "GREEN"}
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    },
+    {
+      "id": "MH-MAITRI",
+      "title": "Maharashtra Industry, Trade and Investment Facilitation Cell (MAITRI) clearance framework",
+      "domain": "business_registration",
+      "authority": "Industries Department, Government of Maharashtra",
+      "citation_url": "https://maitri.mahaonline.gov.in",
+      "applies_when": ["establishes_industrial_unit"],
+      "obligations": [
+        {"key": "single_window_clearance", "summary": "State industrial clearances route through Maharashtra's own facilitation cell.", "lane": "GREEN"}
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    }
+  ],
+  "state_escalation_triggers": [
+    "Applying a Telangana or Andhra Pradesh shops-and-establishments template to a Maharashtra workplace — the governing Act is a different, later statute.",
+    "Opening a second office in Maharashtra while running payroll registered in another state."
+  ]
+}

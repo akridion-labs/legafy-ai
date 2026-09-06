@@ -1,0 +1,104 @@
+# =============================================================================
+# Legafy AI — default compose stack (custom CPU server, bridge networking)
+#
+# Two containers by default: api + cloudflared. Redis is opt-in via
+# `--profile full` for multi-worker rate limiting.
+#
+#   docker compose up -d --build            # api + cloudflared
+#   docker compose --profile full up -d      # + redis
+#
+# The api service binds ONLY to the host loopback (127.0.0.1:8000) — the box
+# never exposes an internet-facing port. The cloudflared tunnel is the sole
+# ingress path; its public hostname must be mapped in the Cloudflare
+# dashboard (or via setup_tunnel.sh) to http://api:8000, i.e. the api
+# service's name on the `legafy_net` bridge network created by this file.
+# =============================================================================
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: legafy-ai:latest
+    container_name: legafy-api
+    env_file: .env
+    restart: unless-stopped
+    volumes:
+      # Persistent runtime artefacts + append-only audit vault. Must survive
+      # container replacement, hence a bind mount rather than an ephemeral
+      # container filesystem path.
+      - ./generated:/workspace/generated
+      # Jurisdiction data is read-only at runtime — the container never
+      # writes law data, only consumes it.
+      - ./data:/workspace/data:ro
+    expose:
+      - "8000"
+    ports:
+      # LOOPBACK ONLY. Do not change the host side of this mapping to 0.0.0.0
+      # or drop the "127.0.0.1:" prefix — the tunnel is the only ingress this
+      # deployment is meant to have.
+      - "127.0.0.1:8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=3).status == 200 else 1)"]
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    # Sane ceiling for a shared CPU box — uncomment and tune to the host's
+    # actual spec. Resource limits only take effect under `docker compose`
+    # (Swarm honours them natively; plain Compose enforces them via the
+    # engine when Compose v2 + a cgroup-aware daemon is in use).
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: "2.0"
+    #       memory: 2g
+    #     reservations:
+    #       cpus: "0.5"
+    #       memory: 512m
+    networks:
+      - legafy_net
+
+  # Ingress. In this default (bridge) file cloudflared reaches the API at
+  # http://api:8000 over the `legafy_net` compose network — map the tunnel's
+  # public hostname to that origin in the Cloudflare Zero Trust dashboard
+  # (Networks > Tunnels > <tunnel> > Public Hostname), or let
+  # setup_tunnel.sh / cloudflared/config.yml drive it. For the host-network
+  # deployment variant see docker-compose.host.yml, which targets
+  # http://localhost:8000 instead.
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: legafy-cloudflared
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - legafy_net
+
+  # Opt-in: distributed rate-limit / quota backend for multi-worker
+  # deployments. `make up-full` or `docker compose --profile full up -d`.
+  redis:
+    image: redis:7-alpine
+    container_name: legafy-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    restart: unless-stopped
+    volumes:
+      - legafy_redis_data:/data
+    profiles:
+      - full
+    networks:
+      - legafy_net
+
+volumes:
+  legafy_redis_data:
+
+networks:
+  legafy_net:
+    driver: bridge

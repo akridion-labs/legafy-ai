@@ -1,0 +1,57 @@
+# =============================================================================
+# Legafy AI — cloudflared tunnel configuration template
+#
+# Copy to cloudflared/config.yml (setup_tunnel.sh does this for you) and fill
+# in the values `cloudflared tunnel create` / `setup_tunnel.sh` produce. This
+# file is only consulted when running cloudflared in *local config* mode
+# (`cloudflared tunnel run <name>`). The docker-compose.yml default instead
+# runs cloudflared in *token* mode (`tunnel run --token ...`), whose ingress
+# is configured in the Cloudflare Zero Trust dashboard, not here — this file
+# is provided for the CLI-driven / bare-metal cloudflared workflow that
+# setup_tunnel.sh automates, and as the source of truth for what the
+# dashboard's Public Hostname route should say.
+# =============================================================================
+
+# The tunnel's UUID, as printed by `cloudflared tunnel create <name>` or
+# found with `cloudflared tunnel list`. NOT the human-readable tunnel name.
+tunnel: <TUNNEL-UUID>
+
+# Path to the credentials JSON that `cloudflared tunnel create` wrote for
+# this tunnel (normally ~/.cloudflared/<TUNNEL-UUID>.json). Required for
+# local config mode; not used in token mode.
+credentials-file: /home/legafy/.cloudflared/<TUNNEL-UUID>.json
+
+# Origin (cloudflared -> local service) connection tuning.
+originRequest:
+  # How long cloudflared waits to establish a TCP connection to the origin
+  # before giving up. Keep short — a hung origin should fail fast so
+  # Cloudflare's edge can return a clear error rather than hanging the
+  # client.
+  connectTimeout: 10s
+  # The origin here is our own uvicorn process on plain HTTP — do not skip
+  # TLS verification as a substitute for real TLS; this flag exists for
+  # self-signed origin certs and is irrelevant (and dangerous to flip if it
+  # ever becomes relevant) for a plaintext localhost origin.
+  noTLSVerify: false
+
+# Ingress rules are evaluated top-to-bottom; the first hostname match wins,
+# and a final catch-all is mandatory.
+ingress:
+  # Public hostname this tunnel serves, routed to the API.
+  #
+  # - `http://localhost:8000` is correct for the host-networking deployment
+  #   (docker-compose.host.yml / setup_tunnel.sh run on the CPU server
+  #   itself, where cloudflared shares the host's network namespace and
+  #   "localhost" IS the host's loopback where uvicorn listens).
+  # - For the default bridge-network stack (docker-compose.yml, no host
+  #   override), cloudflared instead reaches the API by its compose service
+  #   name — use `http://api:8000` there instead. Swap the active line below
+  #   to match which compose file(s) you're running.
+  - hostname: legal-mcp.akridion.com
+    service: http://localhost:8000
+    # service: http://api:8000   # <- use this line instead for bridge mode
+
+  # Catch-all: any request that matched no hostname above gets a plain 404
+  # rather than being silently proxied somewhere unintended. This rule must
+  # stay last — ingress rules are order-sensitive.
+  - service: http_status:404

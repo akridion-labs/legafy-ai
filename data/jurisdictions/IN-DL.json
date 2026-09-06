@@ -1,0 +1,55 @@
+{
+  "code": "IN-DL",
+  "display_name": "Delhi (NCT)",
+  "aliases": ["delhi", "new delhi", "nct", "dl", "in-dl", "ncr"],
+  "isolation_group": "IN-DL",
+  "tier": "state",
+  "seed_compiled_on": "2026-09-06",
+  "verification_status": "SEED_UNVERIFIED",
+  "verification_note": "Delhi is a fully segregated code path. Notably, its instrument set is not a subset of any other state's — the absence of an instrument here is itself a state-level fact that must be verified, not inferred.",
+  "source_whitelist": [
+    "https://labour.delhi.gov.in",
+    "https://web.delhi.gov.in",
+    "https://www.indiacode.nic.in"
+  ],
+  "instruments": [
+    {
+      "id": "DL-SE-1954",
+      "title": "Delhi Shops and Establishments Act, 1954",
+      "domain": "labour",
+      "authority": "Labour Department, Government of NCT of Delhi",
+      "citation_url": "https://labour.delhi.gov.in",
+      "applies_when": ["has_workplace_in_state"],
+      "obligations": [
+        {"key": "establishment_registration", "summary": "Establishments in the NCT register with the Delhi labour department under its own rules.", "lane": "GREEN"},
+        {"key": "conditions_of_service", "summary": "Hours, closing days and leave follow Delhi rules.", "lane": "AMBER"}
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    },
+    {
+      "id": "DL-LWF-1975",
+      "title": "Delhi Labour Welfare Fund Act, 1975",
+      "domain": "labour",
+      "authority": "Delhi Labour Welfare Board",
+      "citation_url": "https://labour.delhi.gov.in",
+      "applies_when": ["employs_persons"],
+      "obligations": [
+        {"key": "lwf_contribution", "summary": "Welfare fund contribution is payable to the Delhi board on its own cycle.", "lane": "GREEN"}
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    }
+  ],
+  "state_level_absences": [
+    {
+      "topic": "professional_tax",
+      "assertion": "Delhi has historically not levied a professional tax of the kind imposed by Telangana, Andhra Pradesh, Maharashtra and Karnataka.",
+      "verification_status": "SEED_UNVERIFIED",
+      "instruction": "Do not present this absence as settled to a user until a reviewer has confirmed it against the Delhi finance department's current position. An absence is a claim like any other."
+    }
+  ],
+  "state_escalation_triggers": [
+    "Cross-NCR operations: a workplace in Noida (Uttar Pradesh) or Gurugram (Haryana) is a different state path even when staff sit in the same metro area."
+  ]
+}

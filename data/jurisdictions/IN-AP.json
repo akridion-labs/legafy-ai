@@ -1,0 +1,77 @@
+{
+  "code": "IN-AP",
+  "display_name": "Andhra Pradesh",
+  "aliases": ["andhra pradesh", "andhra", "ap", "in-ap", "visakhapatnam", "amaravati", "vijayawada"],
+  "isolation_group": "IN-AP",
+  "tier": "state",
+  "seed_compiled_on": "2026-09-06",
+  "verification_status": "SEED_UNVERIFIED",
+  "verification_note": "Andhra Pradesh is a fully segregated code path from Telangana. Shared statutory ancestry before state reorganisation does not imply present-day equivalence: rules, slabs, portals and administering authorities diverge and must be read from Andhra Pradesh sources only.",
+  "source_whitelist": [
+    "https://labour.ap.gov.in",
+    "https://apct.gov.in",
+    "https://www.apindustries.gov.in",
+    "https://www.ap.gov.in",
+    "https://www.indiacode.nic.in"
+  ],
+  "instruments": [
+    {
+      "id": "AP-SE-1988",
+      "title": "Andhra Pradesh Shops and Establishments Act, 1988",
+      "domain": "labour",
+      "authority": "Labour Department, Government of Andhra Pradesh",
+      "citation_url": "https://labour.ap.gov.in",
+      "applies_when": ["has_workplace_in_state"],
+      "obligations": [
+        {"key": "establishment_registration", "summary": "Establishments operating in Andhra Pradesh register with the Andhra Pradesh labour department under its own rules and forms.", "lane": "GREEN"},
+        {"key": "working_hours_and_leave", "summary": "Hours, holidays and leave entitlements follow Andhra Pradesh rules and are not interchangeable with Telangana's.", "lane": "AMBER"}
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    },
+    {
+      "id": "AP-PT-1987",
+      "title": "Andhra Pradesh Tax on Professions, Trades, Callings and Employments Act, 1987",
+      "domain": "taxation",
+      "authority": "Commercial Taxes Department, Government of Andhra Pradesh",
+      "citation_url": "https://apct.gov.in",
+      "applies_when": ["employs_persons", "carries_on_profession_in_state"],
+      "obligations": [
+        {"key": "pt_registration", "summary": "Separate Andhra Pradesh professional tax registration is required for workplaces in the state.", "lane": "GREEN"},
+        {"key": "pt_remittance", "summary": "Slabs and remittance cycles are notified by the state and must be read from Andhra Pradesh notifications.", "lane": "AMBER"}
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    },
+    {
+      "id": "AP-LWF-1987",
+      "title": "Andhra Pradesh Labour Welfare Fund Act, 1987",
+      "domain": "labour",
+      "authority": "Andhra Pradesh Labour Welfare Board",
+      "citation_url": "https://labour.ap.gov.in",
+      "applies_when": ["employs_persons"],
+      "obligations": [
+        {"key": "lwf_contribution", "summary": "Welfare fund contributions are payable to the Andhra Pradesh board on its own cycle.", "lane": "GREEN"}
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    },
+    {
+      "id": "AP-SINGLE-DESK",
+      "title": "Andhra Pradesh single-desk industrial clearance framework",
+      "domain": "business_registration",
+      "authority": "Industries and Commerce Department, Government of Andhra Pradesh",
+      "citation_url": "https://www.apindustries.gov.in",
+      "applies_when": ["establishes_industrial_unit"],
+      "obligations": [
+        {"key": "single_desk_clearance", "summary": "Industrial approvals route through the state's own single-desk system, distinct from Telangana's.", "lane": "GREEN"}
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    }
+  ],
+  "state_escalation_triggers": [
+    "Copying a Telangana registration pack into an Andhra Pradesh filing — forms, portals and authorities differ.",
+    "Assuming a single professional tax enrolment covers workplaces in both states."
+  ]
+}

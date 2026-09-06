@@ -1,0 +1,37 @@
+{
+  "code": "IN-XX",
+  "display_name": "New State — rename this file to <code>.json",
+  "aliases": ["state name in lower case", "xx"],
+  "isolation_group": "IN-XX",
+  "tier": "state",
+  "seed_compiled_on": "YYYY-MM-DD",
+  "verification_status": "SEED_UNVERIFIED",
+  "verification_note": "Explain here what a reviewer must confirm before this file is promoted to VERIFIED.",
+  "source_whitelist": [
+    "https://<state-labour-portal>.gov.in",
+    "https://www.indiacode.nic.in"
+  ],
+  "instruments": [
+    {
+      "id": "XX-SE-YYYY",
+      "title": "Full statutory title exactly as published, with year",
+      "domain": "labour | taxation | data_protection | corporate_structure | business_registration | cross_border | consumer",
+      "authority": "Administering department, exactly as named on the official portal",
+      "citation_url": "https://<primary-source-url-on-the-whitelist>",
+      "applies_when": ["has_workplace_in_state"],
+      "obligations": [
+        {
+          "key": "short_stable_key",
+          "summary": "One sentence describing the duty in plain language. Never write a section number here unless you have read it in the primary source and recorded it in `verified_citations`.",
+          "lane": "GREEN | AMBER | RED"
+        }
+      ],
+      "verified_citations": [],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    }
+  ],
+  "state_escalation_triggers": [
+    "Situations specific to this state that must force a RED lane."
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "_README": "Legafy AI tenant registry. Every key except '_README' is an internal tenant label of your choosing (not shown to the tenant). Each entry must set 'token_sha256' to the hex SHA-256 digest of that tenant's bearer token -- NEVER store the raw token in a production registry. To mint a new token: run `openssl rand -hex 24` to generate it, hand that value to the tenant once over a secure channel, then run `printf %s \"$TOKEN\" | shasum -a 256` and paste the resulting hex digest into 'token_sha256'. A raw 'token' field is also accepted as a fallback, but is intended for local development only -- tenancy.py prefers 'token_sha256' when both are present. 'rate_limit_per_minute', 'monthly_quota' and 'scopes' are optional per-tenant overrides of the TIER_DEFAULTS for the given 'tier'; omit any of them to inherit the tier default. 'expires_on' is an ISO-8601 date (YYYY-MM-DD); tokens are rejected once that date has passed.",
+
+  "acme-robotics-dev": {
+    "organization_name": "Acme Robotics Pvt Ltd",
+    "tier": "DEVELOPER_FREE",
+    "token_sha256": "1f3c2b7a9e5d4681cf0a6b8d2e4f5c7a9b1d3e5f7a9c1b3d5e7f9a1c3b5d7e9f",
+    "expires_on": "2027-06-30",
+    "scopes": ["audit"]
+  },
+
+  "beta-saas-premium": {
+    "organization_name": "Beta SaaS Technologies Inc",
+    "tier": "PREMIUM_HOSTED",
+    "token_sha256": "2a4d6c8e0f1b3d5a7c9e1f3a5b7d9e1c3a5f7b9d1e3c5a7f9b1d3e5c7a9f1b3d",
+    "expires_on": "2027-03-15",
+    "rate_limit_per_minute": 120,
+    "monthly_quota": 50000,
+    "scopes": ["audit", "generate"]
+  },
+
+  "gamma-holdings-enterprise": {
+    "organization_name": "Gamma Holdings LLP",
+    "tier": "ENTERPRISE_B2B",
+    "token_sha256": "3b5e7d9f1a2c4e6b8d0f2a4c6e8b0d2f4a6c8e0b2d4f6a8c0e2b4d6f8a0c2e4b",
+    "expires_on": "2026-12-31",
+    "rate_limit_per_minute": 2000,
+    "monthly_quota": 5000000,
+    "scopes": ["*"]
+  }
+}

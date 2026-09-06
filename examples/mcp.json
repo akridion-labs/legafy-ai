@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "legafy-ai": {
+      "command": "python",
+      "args": ["-m", "app.mcp.server"],
+      "env": {
+        "LEGAFY_MCP_MODE": "remote",
+        "LEGAFY_REMOTE_URL": "https://legal-mcp.akridion.com",
+        "LEGAFY_API_TOKEN": "${LEGAFY_API_TOKEN}"
+      }
+    }
+  }
+}

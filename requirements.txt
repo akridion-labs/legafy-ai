@@ -1,0 +1,17 @@
+# ---------------------------------------------------------------------------
+# Legafy AI — runtime dependencies (pinned for reproducible CPU-server builds)
+# ---------------------------------------------------------------------------
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.4
+pydantic-settings==2.7.0
+python-docx==1.1.2
+httpx==0.28.1
+python-json-logger==3.2.1
+slowapi==0.1.9
+
+# --- Optional integrations (import-guarded; safe to remove) ----------------
+redis==5.2.1            # distributed rate-limit + quota backend
+mcp==1.2.0              # Model Context Protocol stdio server
+anthropic==0.42.0       # provider adapter
+openai==1.59.6          # provider adapter (also used for OpenAI-compatible endpoints)

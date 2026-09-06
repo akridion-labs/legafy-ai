@@ -1,0 +1,55 @@
+# =============================================================================
+# Legafy AI — host-networking override for cloudflared
+#
+# Apply together with the base file:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.host.yml up -d
+#
+# This is the deployment shape the Akridion blueprint calls for on the
+# custom CPU server: cloudflared runs with `network_mode: host` and reaches
+# the API directly at http://localhost:8000 on the host's loopback, instead
+# of hopping through the `legafy_net` bridge network.
+#
+# WHY AN OVERRIDE FILE:
+#   `network_mode: host` is mutually exclusive with `networks:` on the same
+#   service (Compose rejects a service that sets both). Compose's normal
+#   file-merge rules are additive for a service's `networks:`/`ports:`/
+#   `expose:`, so simply omitting them here would NOT drop the base file's
+#   `networks: [legafy_net]` — it would still be inherited, and Compose would
+#   then refuse the merged config outright. This file uses the `!reset`
+#   merge tag (Compose Specification "merge" extension) to explicitly clear
+#   those three fields for the `cloudflared` service instead.
+#   Requires Docker Compose v2.24.0+ (Jan 2024) for `!reset` support — any
+#   currently-maintained `docker compose` install satisfies this.
+#
+# PLATFORM CAVEATS:
+#   - Host networking works as intended on Linux servers (the box this
+#     blueprint targets), where the container's network namespace IS the
+#     host's — no NAT, no published ports needed for the tunnel side.
+#   - It is NOT supported the same way on Docker Desktop for macOS/Windows:
+#     Desktop's VM means `network_mode: host` there does not expose the
+#     host's actual loopback interface to the container the way it does on
+#     native Linux. Do not use this override for local development on a Mac
+#     or Windows workstation — use the default docker-compose.yml (bridge +
+#     `http://api:8000`) instead, and reserve this file for the Linux
+#     production host.
+#   - Because cloudflared now shares the host's network namespace, the api
+#     service's `127.0.0.1:8000:8000` port mapping from the base file must
+#     actually be reachable on the HOST's loopback (not just inside the
+#     compose bridge) for cloudflared to reach it at localhost:8000 — this
+#     is already true of the base file's port mapping, so no change to the
+#     api service is required here.
+# =============================================================================
+
+services:
+  cloudflared:
+    network_mode: host
+    # `network_mode: host` and `networks:` are mutually exclusive in Compose,
+    # and Compose's normal merge rules would otherwise inherit the base
+    # file's `networks: [legafy_net]` unchanged (merging is additive, not
+    # subtractive) — the `!reset` merge tag is what actually clears it.
+    networks: !reset []
+    # Host networking supplies its own resolution/ports; no compose network
+    # membership is possible or needed for this service in this mode.
+    ports: !reset []
+    expose: !reset []
