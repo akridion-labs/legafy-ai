@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "akridion-labs",
+  "description": "Akridion Labs plugins. Legafy AI: pre-counsel compliance screening for Indian jurisdictions.",
+  "owner": {
+    "name": "Akridion Labs LLP",
+    "email": "deepak.b7194@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "legafy",
+      "displayName": "Legafy AI — Legal Screen",
+      "description": "Screen a startup idea against isolated Indian state-level regulatory code paths before you build. Returns a traffic-light verdict and tells you when to stop and retain counsel. Not legal advice.",
+      "category": "security",
+      "version": "1.0.0",
+      "source": "./plugins/legafy",
+      "homepage": "https://github.com/akridion-labs/legafy-ai",
+      "author": {
+        "name": "Akridion Labs LLP",
+        "url": "https://github.com/akridion-labs"
+      },
+      "keywords": [
+        "legal",
+        "compliance",
+        "india",
+        "dpdp",
+        "startup",
+        "risk",
+        "pre-counsel"
+      ]
+    }
+  ]
+}

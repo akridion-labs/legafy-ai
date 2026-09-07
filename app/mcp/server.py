@@ -25,6 +25,7 @@ import logging
 import os
 import sys
 import uuid
+from contextvars import ContextVar
 from datetime import date
 
 from app.models.schemas import LicenseTier, TenantContext
@@ -59,10 +60,26 @@ LOCAL_TENANT = TenantContext(
 )
 
 
+# Set by the Streamable HTTP transport once it has verified the bearer token, so
+# a remote MCP caller is dispatched as its real tenant. Unset over stdio, where
+# the session is one operator on one machine.
+CURRENT_TENANT: ContextVar[TenantContext | None] = ContextVar("legafy_mcp_tenant", default=None)
+
+
 async def _dispatch_local(name: str, payload: dict) -> dict:
     spec = TOOLS_BY_NAME[name]
+    tenant = CURRENT_TENANT.get() or LOCAL_TENANT
+    # Scope is enforced here, not only at the transport: the transport
+    # authenticates the connection, but every tool has its own scope and a
+    # DEVELOPER_FREE token must not reach the paid generate tool through MCP
+    # just because it was allowed to open a session.
+    if not tenant.has_scope(spec.required_scope):
+        raise PermissionError(
+            f"Token for {tenant.organization_name!r} ({tenant.tier.value}) lacks the "
+            f"{spec.required_scope!r} scope required by {name!r}."
+        )
     return await spec.handler(
-        payload, request_id=f"mcp_{uuid.uuid4().hex[:12]}", tenant=LOCAL_TENANT
+        payload, request_id=f"mcp_{uuid.uuid4().hex[:12]}", tenant=tenant
     )
 
 
@@ -73,7 +90,7 @@ async def _dispatch_remote(name: str, payload: dict) -> dict:
     token = os.environ.get("LEGAFY_API_TOKEN", "")
     async with httpx.AsyncClient(timeout=httpx.Timeout(600.0, connect=10.0)) as client:
         resp = await client.post(
-            f"{base}/mcp/tools/{name}/invoke",
+            f"{base}/tools/{name}/invoke",
             headers={"Authorization": f"Bearer {token}"},
             json=payload,
         )

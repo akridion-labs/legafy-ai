@@ -7,7 +7,7 @@ behaviour — a divergence between them would be a compliance hole.
 | Transport | Who it is for | Entry point |
 |---|---|---|
 | **MCP (stdio)** | Claude Desktop, Claude Code, Cursor, Windsurf, Zed, any MCP host | `python -m app.mcp.server` |
-| **HTTP + JSON Schema** | OpenAI function calling, Gemini, LangChain, LlamaIndex, n8n, Zapier, your own backend | `GET /mcp/tools`, `POST /mcp/tools/{name}/invoke` |
+| **HTTP + JSON Schema** | OpenAI function calling, Gemini, LangChain, LlamaIndex, n8n, Zapier, your own backend | `GET /tools`, `POST /tools/{name}/invoke` |
 
 ---
 
@@ -143,7 +143,7 @@ npx @modelcontextprotocol/inspector python -m app.mcp.server   # interactive too
 ## 3. HTTP tool API (non-MCP platforms)
 
 ```bash
-curl -s https://legal-mcp.akridion.com/mcp/tools | jq '.tools[].name'
+curl -s https://legal-mcp.akridion.com/tools | jq '.tools[].name'
 ```
 
 Returns each tool's JSON Schema, ready to paste into an OpenAI `tools` array:
@@ -151,7 +151,7 @@ Returns each tool's JSON Schema, ready to paste into an OpenAI `tools` array:
 ```python
 import httpx, openai
 
-manifest = httpx.get("https://legal-mcp.akridion.com/mcp/tools").json()
+manifest = httpx.get("https://legal-mcp.akridion.com/tools").json()
 tools = [
     {"type": "function",
      "function": {"name": t["name"], "description": t["description"],
@@ -160,14 +160,14 @@ tools = [
 ]
 
 def call_legafy(name: str, args: dict) -> dict:
-    r = httpx.post(f"https://legal-mcp.akridion.com/mcp/tools/{name}/invoke",
+    r = httpx.post(f"https://legal-mcp.akridion.com/tools/{name}/invoke",
                    headers={"Authorization": f"Bearer {TOKEN}"}, json=args, timeout=600)
     r.raise_for_status()
     return r.json()["result"]
 ```
 
 Gemini, LangChain and LlamaIndex all accept the same `input_schema` objects.
-n8n and Zapier can hit `POST /mcp/tools/{name}/invoke` directly with a Bearer
+n8n and Zapier can hit `POST /tools/{name}/invoke` directly with a Bearer
 header.
 
 ---

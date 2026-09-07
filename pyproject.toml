@@ -7,7 +7,7 @@ name = "legafy-ai"
 version = "1.0.0"
 description = "Legafy AI — model-agnostic pre-counsel compliance scaffolding engine (Akridion Labs)"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.14"
 license = { text = "Apache-2.0" }
 authors = [{ name = "Akridion Labs LLP" }]
 keywords = ["legal-tech", "compliance", "mcp", "fastapi", "dpdp", "india"]

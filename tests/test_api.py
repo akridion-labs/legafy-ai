@@ -41,7 +41,7 @@ def test_health_and_root(client):
 
 
 def test_tool_manifest_is_json_schema(client):
-    manifest = client.get("/mcp/tools").json()
+    manifest = client.get("/tools").json()
     names = {t["name"] for t in manifest["tools"]}
     assert "execute_regional_compliance_audit" in names
     schema = next(t for t in manifest["tools"] if t["name"] == "execute_regional_compliance_audit")

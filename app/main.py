@@ -1,10 +1,12 @@
 """Legafy AI production API engine.
 
-Two surfaces on one process:
-  * REST      — /api/v1/*
-  * Tool API  — /mcp/tools (JSON-Schema manifest) + /mcp/tools/{name}/invoke,
-                for AI platforms that call functions over plain HTTP.
-The native MCP stdio server lives in app/mcp/server.py and shares app/tools.py.
+Three surfaces on one process, all sharing app/tools.py:
+  * REST         — /api/v1/*
+  * Tool API     — /tools (JSON-Schema manifest) + /tools/{name}/invoke, for AI
+                   platforms that call functions over plain HTTP.
+  * Remote MCP   — /mcp, Streamable HTTP. This is what a Claude custom connector
+                   or a ChatGPT developer-mode connector points at.
+The stdio MCP server for local hosts lives in app/mcp/server.py.
 """
 
 from __future__ import annotations
@@ -53,6 +55,15 @@ log = logging.getLogger("legafy.api")
 STARTED_AT = time.time()
 
 
+try:
+    from app.mcp.http import build_mcp_http
+
+    MCP_HTTP = build_mcp_http()
+except Exception as exc:  # pragma: no cover - MCP SDK absent or incompatible
+    MCP_HTTP = None
+    logging.getLogger("legafy.api").warning("Remote MCP transport unavailable: %s", exc)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     settings = get_settings()
@@ -66,13 +77,20 @@ async def lifespan(app: FastAPI):
     get_tenant_registry().load()
     settings.generated_path.mkdir(parents=True, exist_ok=True)
     log.info(
-        "Legafy AI %s up | env=%s | jurisdictions=%d | providers=%s",
+        "Legafy AI %s up | env=%s | jurisdictions=%d | providers=%s | mcp_http=%s",
         __version__,
         settings.env,
         len(JURISDICTION_REGISTRY.all_summaries()),
         ",".join(get_router().chain),
+        MCP_HTTP is not None,
     )
-    yield
+    if MCP_HTTP is None:
+        yield
+    else:
+        # A mounted sub-app's lifespan is not run by the parent, so the session
+        # manager has to be started here or /mcp fails on its first request.
+        async with MCP_HTTP.session():
+            yield
     await get_router().aclose()
 
 
@@ -175,10 +193,16 @@ async def root() -> dict:
         "endpoints": {
             "health": "/healthz",
             "openapi": "/docs",
-            "tool_manifest": "/mcp/tools",
-            "tool_invoke": "/mcp/tools/{tool_name}/invoke",
+            "mcp_streamable_http": "/mcp",
+            "tool_manifest": "/tools",
+            "tool_invoke": "/tools/{tool_name}/invoke",
             "audit": "/api/v1/audit",
             "generate": "/api/v1/legal/generate-structure",
+        },
+        "mcp": {
+            "transport": "streamable-http",
+            "url": f"{settings.public_base_url.rstrip('/')}/mcp",
+            "auth": "Authorization: Bearer <token>",
         },
         "public_base_url": settings.public_base_url,
         "disclaimer": LEGAFY_DISCLAIMER,
@@ -201,12 +225,14 @@ async def healthz() -> HealthResponse:
 
 
 # --- Tool API (JSON Schema, for non-MCP AI platforms) ---------------------
-@app.get("/mcp/tools", tags=["tools"])
+# These live under /tools, not /mcp: the whole /mcp subtree belongs to the
+# Streamable HTTP transport mounted at the bottom of this file.
+@app.get("/tools", tags=["tools"])
 async def tool_manifest() -> dict:
     return manifest()
 
 
-@app.post("/mcp/tools/{tool_name}/invoke", tags=["tools"])
+@app.post("/tools/{tool_name}/invoke", tags=["tools"])
 async def invoke_tool(tool_name: str, payload: dict, request: Request):
     spec = TOOLS_BY_NAME.get(tool_name)
     if spec is None:
@@ -256,3 +282,13 @@ async def jurisdictions(auth=Depends(require("audit"))) -> dict:
 async def verify_vault(auth=Depends(require("audit"))) -> dict:
     ok, reason = get_audit_vault().verify_chain()
     return {"intact": ok, "reason": reason, "records": get_audit_vault().record_count()}
+
+
+# --- Remote MCP (Streamable HTTP) -----------------------------------------
+# Mounted last so it owns the whole /mcp subtree. This is the endpoint a Claude
+# custom connector or a ChatGPT developer-mode connector points at.
+if MCP_HTTP is not None:
+    # Starlette answers a bare /mcp with a 307 to /mcp/. Clients that follow
+    # redirects (the MCP SDK does) are fine either way; give out the /mcp/ form
+    # in connector settings so there is no hop at all.
+    app.mount("/mcp", MCP_HTTP)

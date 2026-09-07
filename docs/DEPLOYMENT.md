@@ -3,6 +3,10 @@
 Target: a Linux box you control, reachable from the internet **only** through a
 Cloudflare Tunnel. No inbound router port is ever opened.
 
+> **Deploying on the Akridion machine specifically?** Read
+> [DEPLOYMENT_AKRIDION_SERVER.md](DEPLOYMENT_AKRIDION_SERVER.md) instead. That box is
+> Windows 11 + WSL 2 with a GPU, and three instructions here do not apply to it.
+
 ```
 Internet → Cloudflare edge → outbound-only tunnel → cloudflared container
                                                         → api container :8000 (loopback-bound)
@@ -147,7 +151,7 @@ Confirm from anywhere:
 
 ```bash
 curl -s https://legal-mcp.akridion.com/healthz
-curl -s https://legal-mcp.akridion.com/mcp/tools | python3 -m json.tool | head -30
+curl -s https://legal-mcp.akridion.com/tools | python3 -m json.tool | head -30
 ```
 
 ---

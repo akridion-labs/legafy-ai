@@ -1,0 +1,39 @@
+{
+  "name": "legafy",
+  "displayName": "Legafy AI — Legal Screen",
+  "version": "1.0.0",
+  "description": "Pre-counsel compliance screening for Indian jurisdictions. Isolated state code paths, no fabricated statute citations, and a hard stop when a lawyer is genuinely required.",
+  "author": {
+    "name": "Akridion Labs LLP",
+    "url": "https://github.com/akridion-labs"
+  },
+  "homepage": "https://github.com/akridion-labs/legafy-ai/blob/main/docs/MCP_INTEGRATION.md",
+  "repository": "https://github.com/akridion-labs/legafy-ai",
+  "license": "Apache-2.0",
+  "keywords": ["legal", "compliance", "india", "dpdp", "startup", "pre-counsel"],
+  "userConfig": {
+    "legafy_url": {
+      "type": "string",
+      "title": "Legafy server URL",
+      "description": "Your hosted Legafy MCP endpoint, including the /mcp path.",
+      "default": "https://legal-mcp.akridion.com/mcp",
+      "required": true
+    },
+    "legafy_token": {
+      "type": "string",
+      "title": "Legafy API token",
+      "description": "Bearer token issued by your Legafy deployment. DEVELOPER_FREE tokens can screen ideas; drafting documents needs a PREMIUM or ENTERPRISE token.",
+      "sensitive": true,
+      "required": true
+    }
+  },
+  "mcpServers": {
+    "legafy": {
+      "type": "http",
+      "url": "${user_config.legafy_url}",
+      "headers": {
+        "Authorization": "Bearer ${user_config.legafy_token}"
+      }
+    }
+  }
+}

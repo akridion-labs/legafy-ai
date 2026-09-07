@@ -1,3 +1,5 @@
+<img src="assets/legafy-logo.svg" alt="Legafy AI" height="52">
+
 # Legafy AI
 
 **Model-agnostic pre-counsel compliance scaffolding engine.** Akridion Labs LLP.
@@ -42,11 +44,27 @@ First healthy provider in the chain wins; the rest are failover.
 
 ---
 
+## Use it from Claude
+
+```bash
+/plugin marketplace add akridion-labs/legafy-ai
+/plugin install legafy@akridion-labs
+```
+
+That installs the connector *and* the `legal-idea-screen` skill that tells the model how
+to use it. For claude.ai, Claude Desktop, ChatGPT and everything else, see
+[docs/HOSTING_MCP.md](docs/HOSTING_MCP.md).
+
+---
+
 ## Quick start
+
+Python 3.11–3.13. On 3.14 the pinned dependencies have no wheels yet, so build the venv
+with an older interpreter: `make install PY=python3.13`.
 
 ```bash
 make install
-make test                      # 74 tests, offline, no network
+make test                      # 78 tests, offline, no network
 make run                       # http://localhost:8000/docs
 
 # generate a real document with the offline provider — no API key needed
@@ -82,6 +100,8 @@ app/
   providers/         anthropic | openai | ollama | offline, with failover
   pipeline/          chunk plan → anti-truncation assembly → Markdown → DOCX
   mcp/server.py      MCP stdio server (local engine or remote bridge)
+  mcp/http.py        remote MCP over Streamable HTTP — the connector endpoint
+plugins/legafy/      Claude Code plugin: connector + legal-idea-screen skill
 data/jurisdictions/  one JSON file per isolated code path (IN-TG, IN-AP, …)
 generated/           runtime output + audit vault — gitignored, back this up
 ```
@@ -90,8 +110,11 @@ generated/           runtime output + audit vault — gitignored, back this up
 
 | | |
 |---|---|
+| [Hosting & connectors](docs/HOSTING_MCP.md) | Plugin marketplace, Claude custom connector, ChatGPT, token issuing |
+| [Roadmap](ROADMAP.md) | Verification, municipal layer, IP screening, the corpus question |
 | [MCP & AI-platform integration](docs/MCP_INTEGRATION.md) | Claude Desktop, Claude Code, Cursor, OpenAI function calling, n8n |
-| [Deployment](docs/DEPLOYMENT.md) | CPU server, Docker, Cloudflare Tunnel, GitHub repo setup |
+| [Deployment](docs/DEPLOYMENT.md) | generic Linux server, Docker, Cloudflare Tunnel, GitHub repo setup |
+| [Deployment — Akridion server](docs/DEPLOYMENT_AKRIDION_SERVER.md) | the real box: Win11 + WSL2 + RTX 5070, the F: drive trap, port map |
 | [Architecture](docs/ARCHITECTURE.md) | how the guardrails fit together |
 | [Legal disclaimer](docs/LEGAL_DISCLAIMER.md) | positioning and UPL posture |
 | [CLAUDE.md](CLAUDE.md) | repo guide for Claude Code, plus the invariants |

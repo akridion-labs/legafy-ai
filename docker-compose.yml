@@ -22,6 +22,11 @@ services:
     image: legafy-ai:latest
     container_name: legafy-api
     env_file: .env
+    # Reach a model server running on the Docker host (e.g. Ollama inside WSL 2).
+    # Docker Desktop defines host.docker.internal already; this line is what makes
+    # the same name work on a plain Linux engine.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     restart: unless-stopped
     volumes:
       # Persistent runtime artefacts + append-only audit vault. Must survive

@@ -100,12 +100,12 @@ else
   fail "/healthz did not report ok (status=${RESP_STATUS}, body=${RESP_BODY})"
 fi
 
-# --- 2. /mcp/tools lists execute_regional_compliance_audit --------------------
-request GET "/mcp/tools"
+# --- 2. /tools lists execute_regional_compliance_audit --------------------
+request GET "/tools"
 if [[ "${RESP_STATUS}" == "200" ]] && json_contains "${RESP_BODY}" 'execute_regional_compliance_audit'; then
-  pass "/mcp/tools includes execute_regional_compliance_audit"
+  pass "/tools includes execute_regional_compliance_audit"
 else
-  fail "/mcp/tools missing execute_regional_compliance_audit (status=${RESP_STATUS})"
+  fail "/tools missing execute_regional_compliance_audit (status=${RESP_STATUS})"
 fi
 
 # --- 3. Telangana audit succeeds and names IN-TG ------------------------------
