@@ -1,10 +1,13 @@
-# ==========================================================================
+# =============================================================================
 # Legafy AI — developer & operations entrypoints
 # =============================================================================
 
 .PHONY: help install lint fmt test run smoke mcp build up up-host up-full down logs ps tunnel bootstrap clean audit-verify
 
 VENV        ?= .venv
+# Interpreter used to CREATE the venv. Override when your default python3 is newer
+# than the pinned dependencies have wheels for:  make install PY=python3.12
+PY          ?= python3
 PYTHON      ?= $(VENV)/bin/python
 PIP         ?= $(VENV)/bin/pip
 
@@ -13,7 +16,7 @@ help: ## Show this help
 	@grep -hE '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}'
 
 install: ## Create a venv and install runtime + dev dependencies
-	python3 -m venv $(VENV)
+	$(PY) -m venv $(VENV)
 	$(PIP) install --upgrade pip
 	$(PIP) install -r requirements-dev.txt
 
