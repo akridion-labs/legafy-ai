@@ -2,11 +2,12 @@
 # Legafy AI — developer & operations entrypoints
 # =============================================================================
 
-.PHONY: help install lint fmt test audit run smoke mcp build up up-host up-full down logs ps tunnel bootstrap clean audit-verify watch taxonomy
+.PHONY: help install lint fmt test audit validate validate-live run smoke mcp build up up-host up-full down logs ps tunnel bootstrap clean audit-verify watch taxonomy
 
 VENV        ?= .venv
-# Interpreter used to CREATE the venv. Override when your default python3 is newer
-# than the pinned dependencies have wheels for:  make install PY=python3.12
+# Interpreter used to CREATE the venv. Python 3.11-3.14 all work: every pin is
+# pure Python except pydantic-core, which ships cp314 wheels. Override only if
+# your default python3 is older than 3.11:  make install PY=python3.12
 PY          ?= python3
 PYTHON      ?= $(VENV)/bin/python
 PIP         ?= $(VENV)/bin/pip
@@ -32,6 +33,12 @@ test: ## Run the pytest suite
 audit: ## Scan pinned dependencies for published advisories
 	$(PIP) install -q pip-audit
 	$(VENV)/bin/pip-audit -r requirements.txt
+
+validate: ## Validate plugin manifests, tool schemas and client config examples
+	$(PYTHON) scripts/validate_integration.py
+
+validate-live: ## Validate, then run a real MCP initialize / tools/list / tools/call
+	$(PYTHON) scripts/validate_integration.py --live
 
 run: ## Run the API locally with autoreload
 	$(VENV)/bin/uvicorn app.main:app --reload --host 0.0.0.0 --port 8000

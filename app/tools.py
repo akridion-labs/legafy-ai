@@ -32,6 +32,37 @@ from app.service import run_audit, run_generation
 from app.sources.store import CITABLE_AUTHORITY_FLOOR, MalformedQuery, get_store
 
 
+def inline_refs(schema: dict) -> dict:
+    """Resolve every local `$ref` against `$defs` and drop the `$defs` block.
+
+    Only local `#/$defs/...` pointers are resolved — that is all Pydantic emits
+    for these models. A self-referential model would recurse forever here, so
+    the depth guard turns that into a visible error rather than a hang.
+    """
+    defs = schema.get("$defs", {})
+    if not defs:
+        return schema
+
+    def walk(node: Any, depth: int = 0) -> Any:
+        if depth > 20:
+            raise ValueError("schema nests deeper than 20 levels — is it recursive?")
+        if isinstance(node, dict):
+            ref = node.get("$ref")
+            if isinstance(ref, str) and ref.startswith("#/$defs/"):
+                target = defs.get(ref.rsplit("/", 1)[1])
+                if target is None:
+                    return node
+                # Sibling keys (description, default) survive the substitution.
+                merged = {**walk(target, depth + 1), **{k: v for k, v in node.items() if k != "$ref"}}
+                return merged
+            return {k: walk(v, depth + 1) for k, v in node.items() if k != "$defs"}
+        if isinstance(node, list):
+            return [walk(v, depth + 1) for v in node]
+        return node
+
+    return walk(schema)
+
+
 @dataclass(frozen=True)
 class ToolSpec:
     name: str
@@ -44,7 +75,14 @@ class ToolSpec:
     def json_schema(self) -> dict:
         if self.input_model is None:
             return {"type": "object", "properties": {}, "additionalProperties": False}
-        return self.input_model.model_json_schema()
+        # Inlined, not as Pydantic emits it. Pydantic hoists enums into `$defs`
+        # and points at them with `$ref`, which is valid JSON Schema and is fine
+        # over MCP — but several function-calling runtimes (and a few no-code
+        # tools) either ignore `$defs` or reject the document, and the failure
+        # mode is a tool that silently accepts any string for `state_location`.
+        # One schema shape for every platform is worth more than the few hundred
+        # bytes the refs save.
+        return inline_refs(self.input_model.model_json_schema())
 
     def manifest(self) -> dict:
         return {
@@ -73,7 +111,7 @@ async def _audit(payload: dict, *, request_id: str, tenant: TenantContext) -> di
         )
 
     if request.detail == "compact":
-        result = compact_audit(result)
+        result = compact_audit(result, request.sections)
     if request.language:
         # Explanation layer only — see app/localisation.py for what stays English.
         result = await translate_payload(result, request.language)

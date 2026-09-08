@@ -11,6 +11,7 @@
     "https://egazette.gov.in",
     "https://ipindia.gov.in",
     "https://labour.gov.in",
+    "https://udyamregistration.gov.in",
     "https://www.gst.gov.in",
     "https://www.incometax.gov.in",
     "https://www.indiacode.nic.in",
@@ -450,6 +451,167 @@
             "foreign_investment",
             "cross_border_payments",
             "multi_state_operations"
+          ]
+        }
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    },
+    {
+      "id": "IN-CONTRACT-1872",
+      "title": "Indian Contract Act, 1872",
+      "domain": "contract",
+      "authority": "Ministry of Law and Justice",
+      "citation_url": "https://www.indiacode.nic.in",
+      "applies_when": [
+        "any_entity"
+      ],
+      "obligations": [
+        {
+          "key": "formation_and_consideration",
+          "summary": "An agreement is enforceable only if the essentials are present: capacity, free consent, lawful object and consideration. A founder arrangement recorded only in chat or email is frequently unenforceable on its terms.",
+          "lane": "AMBER"
+        },
+        {
+          "key": "restraint_of_trade",
+          "summary": "An agreement restraining a person from exercising a lawful profession, trade or business is void in India to that extent. A post-employment non-compete drafted to a foreign template is generally unenforceable here, and relying on it as protection is the error.",
+          "lane": "AMBER"
+        },
+        {
+          "key": "indemnity_and_limitation",
+          "summary": "Indemnity, limitation of liability and termination rights are the clauses that decide what a dispute costs. They are negotiated, not boilerplate.",
+          "lane": "AMBER",
+          "applies_when": [
+            "supplies_goods_or_services",
+            "sells_to_consumers",
+            "government_contracting"
+          ]
+        }
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    },
+    {
+      "id": "IN-STAMP-1899",
+      "title": "Indian Stamp Act, 1899 (read with the applicable State Stamp Act)",
+      "domain": "contract",
+      "authority": "Department of Revenue / State Registration and Stamps Department",
+      "citation_url": "https://www.indiacode.nic.in",
+      "applies_when": [
+        "any_entity"
+      ],
+      "obligations": [
+        {
+          "key": "stamp_duty_incidence",
+          "summary": "Stamp duty is payable on the instrument, at the rate of the state where it is executed, and the rate differs by state for the same document. Duty must be paid before or at execution, not afterwards.",
+          "lane": "AMBER"
+        },
+        {
+          "key": "unstamped_inadmissible",
+          "summary": "An insufficiently stamped instrument is not admissible in evidence until the duty and penalty are paid. A signed agreement that cannot be produced in court is, for practical purposes, no agreement at all.",
+          "lane": "AMBER"
+        },
+        {
+          "key": "e_stamping_route",
+          "summary": "Most states now require e-stamping through the authorised vendor rather than physical stamp paper, and franking rules vary by state.",
+          "lane": "GREEN"
+        }
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    },
+    {
+      "id": "IN-REG-1908",
+      "title": "Registration Act, 1908",
+      "domain": "contract",
+      "authority": "State Registration and Stamps Department",
+      "citation_url": "https://www.indiacode.nic.in",
+      "applies_when": [
+        "has_workplace_in_state",
+        "establishes_industrial_unit"
+      ],
+      "obligations": [
+        {
+          "key": "compulsory_registration",
+          "summary": "Certain instruments — notably leases of immovable property beyond the prescribed term — must be registered, and an unregistered instrument in that class does not affect the property or work as evidence of the transaction.",
+          "lane": "AMBER"
+        }
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    },
+    {
+      "id": "IN-ARB-1996",
+      "title": "Arbitration and Conciliation Act, 1996",
+      "domain": "dispute_resolution",
+      "authority": "Ministry of Law and Justice",
+      "citation_url": "https://www.indiacode.nic.in",
+      "applies_when": [
+        "any_entity"
+      ],
+      "obligations": [
+        {
+          "key": "dispute_clause_specificity",
+          "summary": "An arbitration clause must name the seat, the number of arbitrators, the appointing mechanism and the language. A clause naming only 'arbitration in India' generates a preliminary dispute about the dispute.",
+          "lane": "AMBER"
+        },
+        {
+          "key": "seat_and_governing_law",
+          "summary": "Seat of arbitration and governing law are separate choices with separate consequences, and a cross-border contract needs both stated deliberately.",
+          "lane": "RED",
+          "applies_when": [
+            "foreign_investment",
+            "cross_border_payments",
+            "cross_border_data_transfer"
+          ]
+        }
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    },
+    {
+      "id": "IN-NI-1881",
+      "title": "Negotiable Instruments Act, 1881",
+      "domain": "dispute_resolution",
+      "authority": "Ministry of Finance",
+      "citation_url": "https://www.indiacode.nic.in",
+      "applies_when": [
+        "supplies_goods_or_services",
+        "sells_to_consumers"
+      ],
+      "obligations": [
+        {
+          "key": "dishonour_procedure",
+          "summary": "Dishonour of a cheque for insufficiency of funds is prosecutable, but only if the statutory notice is issued within the prescribed window after the return memo. Missing that window forfeits the remedy entirely.",
+          "lane": "AMBER"
+        }
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    },
+    {
+      "id": "IN-MSMED-2006",
+      "title": "Micro, Small and Medium Enterprises Development Act, 2006",
+      "domain": "business_registration",
+      "authority": "Ministry of Micro, Small and Medium Enterprises",
+      "citation_url": "https://udyamregistration.gov.in",
+      "applies_when": [
+        "any_entity"
+      ],
+      "obligations": [
+        {
+          "key": "udyam_registration",
+          "summary": "Udyam registration is free, self-declared, and is the gateway to public-procurement set-asides, subsidised credit and several state incentives.",
+          "lane": "GREEN"
+        },
+        {
+          "key": "payment_timeline_to_msme",
+          "summary": "A buyer must pay a registered micro or small supplier within the statutory period. Overdue amounts attract compounded interest that cannot be contracted out of, and the deduction of the expense can be disallowed for tax.",
+          "lane": "AMBER",
+          "applies_when": [
+            "supplies_goods_or_services",
+            "government_contracting",
+            "establishes_industrial_unit"
           ]
         }
       ],

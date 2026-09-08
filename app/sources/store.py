@@ -204,6 +204,10 @@ def sanitise_fts_query(query: str) -> str:
     return " OR ".join(cleaned[:32])
 
 
+# ponytail: one sqlite3 connection, shared, check_same_thread=False. Safe today
+# because every caller runs on the event loop (all handlers are async, none are
+# offloaded). If a caller is ever moved to a worker thread, give each thread its
+# own connection and enable WAL — do NOT just add a lock and call it fixed.
 class SourceStore:
     def __init__(self, path: Path | None = None) -> None:
         self.path = path or (get_settings().generated_path / "legal_sources.db")

@@ -50,7 +50,7 @@ def _proof(instrument: dict[str, Any], jurisdiction: str, verification: str) -> 
     }
 
 
-def compact_audit(full: dict[str, Any]) -> dict[str, Any]:
+def compact_audit(full: dict[str, Any], sections: list[str] | None = None) -> dict[str, Any]:
     """Shrink an audit response to lane, duties and proofs.
 
     Three sources of noise are removed:
@@ -66,6 +66,10 @@ def compact_audit(full: dict[str, Any]) -> dict[str, Any]:
     Nothing that changes a decision is dropped: every RED signal, the halt
     notice, the counsel brief and every proof pointer are kept in full.
     """
+    # `sections` can drop optional blocks, never the verdict, the halt notice, the
+    # counsel brief or a RED signal — those are unconditional below.
+    want = (lambda name: True) if sections is None else (lambda name: name in set(sections))
+
     traffic = full.get("traffic_light", {})
     proofs: dict[str, dict[str, Any]] = {}
 
@@ -113,15 +117,35 @@ def compact_audit(full: dict[str, Any]) -> dict[str, Any]:
     }
 
     # verify_at duplicates proofs[ref].url and quantum is constant; both drop.
-    compact["obligations"] = [
-        {k: v for k, v in ob.items() if k not in {"verify_at", "quantum", "tier"}}
-        for ob in ledger.get("obligations", [])
-    ]
-    compact["playbooks"] = ledger.get("playbooks", {})
-    compact["quantum_note"] = ledger.get("quantum_note", "")
+    if want("obligations"):
+        compact["obligations"] = [
+            {k: v for k, v in ob.items() if k not in {"verify_at", "quantum", "tier"}}
+            for ob in ledger.get("obligations", [])
+        ]
+        compact["playbooks"] = ledger.get("playbooks", {})
+        compact["quantum_note"] = ledger.get("quantum_note", "")
+
+    if not want("proofs"):
+        compact.pop("proofs", None)
+
+    checklist = full.get("research_checklist") or {}
+    if want("research_checklist") and checklist.get("phases"):
+        # `authority` and `proves` are dropped: the register name already says who
+        # runs it, and the model can read the name. What it cannot infer is the
+        # cost of skipping, so that stays.
+        compact["research_checklist"] = [
+            {
+                "when": phase["when"],
+                "search": [
+                    {"do": s["search"], "at": s["where"], "else": s["if_skipped"]}
+                    for s in phase["searches"]
+                ],
+            }
+            for phase in checklist["phases"]
+        ]
 
     screen = full.get("ip_screen") or {}
-    if screen.get("findings"):
+    if want("ip_screen") and screen.get("findings"):
         compact["ip_risks"] = [
             {
                 "id": f["id"],

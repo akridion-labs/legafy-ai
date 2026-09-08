@@ -200,6 +200,17 @@ class RegionalComplianceAuditRequest(BaseModel):
             "full returns instrument-level metadata."
         ),
     )
+    sections: list[
+        Literal["obligations", "research_checklist", "ip_screen", "proofs"]
+    ] | None = Field(
+        default=None,
+        description=(
+            "Optional token lever. Name only the blocks you need and the rest are omitted; "
+            "omit this field to get everything. The verdict, the halt notice, the counsel "
+            "brief and every RED signal are ALWAYS returned and cannot be switched off — "
+            "a caller must not be able to ask for a cheaper answer that hides a red light."
+        ),
+    )
     contribute_to_corpus: bool = Field(
         default=False,
         description=(
@@ -240,6 +251,13 @@ class RegionalComplianceAuditResponse(BaseModel):
             "Every applicable duty with how to close it and what exposure follows if it is "
             "not closed. Consequences are categorical; amounts are never stated unless "
             "verified against the primary source."
+        ),
+    )
+    research_checklist: dict[str, Any] = Field(
+        default_factory=dict,
+        description=(
+            "The official register searches this venture should have run, grouped by the "
+            "phase of work they belong to. Where to look and why, never what you will find."
         ),
     )
     ip_screen: dict[str, Any] = Field(

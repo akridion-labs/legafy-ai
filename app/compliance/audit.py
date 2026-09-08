@@ -16,6 +16,7 @@ from typing import Any
 
 from app.compliance.obligations import build_obligation_ledger, screen_ip
 from app.compliance.registry import JURISDICTION_REGISTRY, Jurisdiction
+from app.compliance.research import build_research_checklist
 from app.compliance.traffic_light import TRAFFIC_LIGHT
 from app.models.schemas import (
     JurisdictionBlock,
@@ -137,6 +138,7 @@ async def execute_regional_compliance_audit(
         traffic_light=verdict.to_model(),
         legal_obligations=build_obligation_ledger(grounding),
         ip_screen=screen_ip(request.business_concept, request.industry_vertical, flags),
+        research_checklist=build_research_checklist(flags),
         source_whitelist=grounding.get("source_whitelist", []),
         provenance_warning=grounding.get("provenance_warning", ""),
         disclaimer=LEGAFY_DISCLAIMER,

@@ -172,6 +172,44 @@ DOMAIN_PLAYBOOK: dict[str, Playbook] = {
             "is held in escrow or repriced.",
         ),
     ),
+    "contract": Playbook(
+        how_to_close=(
+            "Write the deal down before work starts. An arrangement recorded only in chat "
+            "is the one that gets disputed, and it is disputed at the worst moment.",
+            "Pay the stamp duty of the state of execution at the time of execution — the rate "
+            "differs by state for the same document, and it cannot be cured cheaply later.",
+            "Drop foreign-template non-competes: a post-employment restraint is void in India "
+            "to that extent. Protect with confidentiality, assignment and notice periods instead.",
+            "Negotiate indemnity, liability cap and termination as three separate questions; "
+            "they are the clauses that decide what a dispute costs.",
+        ),
+        if_ignored=(
+            "An insufficiently stamped agreement is not admissible in evidence until the duty "
+            "and a penalty are paid — a signed contract you cannot produce is not a contract.",
+            "A restraint that is void does not merely fail; it leaves the departing person free "
+            "while you believed you were protected.",
+            "Unregistered instruments in the compulsorily registrable class do not affect the "
+            "property at all, however clearly they were drafted.",
+            "Unlimited liability by silence: with no cap, exposure is whatever the loss turns "
+            "out to be.",
+        ),
+    ),
+    "dispute_resolution": Playbook(
+        how_to_close=(
+            "Name the seat, the number of arbitrators, the appointing mechanism and the "
+            "language in the clause itself. 'Arbitration in India' is not a clause.",
+            "State the governing law and the seat separately — they are different choices with "
+            "different consequences, especially across borders.",
+            "Diarise the statutory notice window the moment a cheque is returned; the remedy "
+            "is lost by silence, not by defeat.",
+        ),
+        if_ignored=(
+            "A preliminary fight about how to fight, decided by a court, before the actual "
+            "dispute is even heard.",
+            "A cross-border award that cannot be enforced where the assets are.",
+            "A dishonour remedy forfeited entirely because the notice went out a week late.",
+        ),
+    ),
     "consumer": Playbook(
         how_to_close=(
             "Say what the product does in the words the customer will use, and keep the "

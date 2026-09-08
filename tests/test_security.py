@@ -7,6 +7,7 @@ running application, so fix the code rather than the assertion.
 
 from __future__ import annotations
 
+import json
 import os
 import stat
 
@@ -337,7 +338,8 @@ def test_cascade_answers_from_the_matrix_before_touching_the_index(tmp_path):
                          record_miss=False)
         assert result.tier == "L0"
         assert any(i["jurisdiction"] == "IN-TG" for i in result.instruments)
-        assert all(i["jurisdiction"] == "IN-TG" for i in result.instruments)
+        # Union instruments are always in scope; another STATE never is.
+        assert {i["jurisdiction"] for i in result.instruments} <= {"IN-TG", "IN-CENTRAL"}
     finally:
         store.close()
 
@@ -375,3 +377,109 @@ def test_l0_prefers_an_acronym_over_a_generic_title_word():
 
     hits = _match_instruments("epf and esi registration", None)
     assert [h["id"] for h in hits][:2] == ["IN-EPF-1952", "IN-ESI-1948"]
+
+
+# --- The sections lever must never be able to hide a red light ---------------
+def test_sections_lever_cannot_suppress_a_red_verdict():
+    """A caller asking for fewer tokens must not be able to ask for a safer answer.
+
+    `sections` drops optional blocks only. The lane, the halt notice, the
+    counsel brief and every RED signal are unconditional, because a token
+    budget is not a reason to hide the reason someone must stop.
+    """
+    from app.compliance.obligations import build_obligation_ledger
+
+    red = {
+        "traffic_light": {
+            "lane": "RED",
+            "automation_permitted": False,
+            "red_lane": [{"id": "payment_escrow", "title": "Escrow", "rationale": "Holds funds.",
+                          "matched_on": ["escrow"], "instrument_refs": []}],
+            "amber_lane": [], "green_lane": [],
+            "mandatory_counsel_notice": "Stop and retain counsel.",
+            "counsel_brief": ["Ask about payment aggregator authorisation."],
+        },
+        **GROUNDING,
+        "legal_obligations": build_obligation_ledger(GROUNDING),
+        "ip_screen": screen_ip("An escrow wallet", "fintech"),
+        "research_checklist": {"phases": [{"phase": "premises", "when": "later",
+                                           "searches": [{"search": "x", "where": "y",
+                                                         "if_skipped": "z"}]}]},
+    }
+    for sections in ([], ["obligations"], ["ip_screen"], ["proofs"], None):
+        c = compact_audit(red, sections)
+        assert c["lane"] == "RED", sections
+        assert c["automation_permitted"] is False, sections
+        assert c["halt"] == "Stop and retain counsel.", sections
+        assert c["ask_your_lawyer"], sections
+        assert c["red"][0]["id"] == "payment_escrow", sections
+        assert c["red"][0]["why"], sections
+
+
+def test_sections_lever_actually_drops_what_it_says():
+    from app.compliance.obligations import build_obligation_ledger
+
+    full = {
+        "traffic_light": {"lane": "AMBER", "automation_permitted": True,
+                          "red_lane": [], "amber_lane": [], "green_lane": []},
+        **GROUNDING,
+        "legal_obligations": build_obligation_ledger(GROUNDING),
+        "ip_screen": screen_ip("We scrape datasets and fine-tune an LLM", "ai"),
+        "research_checklist": {"phases": [{"phase": "ip", "when": "before ship",
+                                           "searches": [{"search": "TM search", "where": "u",
+                                                         "if_skipped": "rebrand"}]}]},
+    }
+    everything = compact_audit(full, None)
+    assert {"obligations", "proofs", "ip_risks", "research_checklist"} <= set(everything)
+
+    minimal = compact_audit(full, [])
+    for dropped in ("obligations", "playbooks", "proofs", "ip_risks", "research_checklist"):
+        assert dropped not in minimal, dropped
+    assert len(json.dumps(minimal)) < len(json.dumps(everything)) / 2
+
+
+# --- Tool schemas must be portable across platforms -------------------------
+def test_tool_schemas_carry_no_refs():
+    """Pydantic hoists enums into $defs. Several function-calling runtimes
+    either ignore $defs or reject the document, and the failure mode is a tool
+    that silently accepts any string where an enum was meant."""
+    from app.tools import TOOLS
+
+    for spec in TOOLS:
+        blob = json.dumps(spec.json_schema())
+        assert "$defs" not in blob, spec.name
+        assert "$ref" not in blob, spec.name
+
+
+def test_inlined_enum_still_constrains_the_value():
+    from app.tools import TOOLS_BY_NAME
+
+    schema = TOOLS_BY_NAME["execute_regional_compliance_audit"].json_schema()
+    flags = schema["properties"]["activity_flags"]["items"]["enum"]
+    assert "operates_escrow" in flags and "uses_third_party_content" in flags
+
+
+def test_research_checklist_is_filtered_by_declared_flags():
+    from app.compliance.research import build_research_checklist
+
+    nobody = build_research_checklist(set())
+    employer = build_research_checklist({"employs_persons", "has_workplace_in_state"})
+    assert employer["count"] > nobody["count"]
+    ids = {s["id"] for p in employer["phases"] for s in p["searches"]}
+    assert "reg.epfo.establishment" in ids
+    assert "reg.epfo.establishment" not in {
+        s["id"] for p in nobody["phases"] for s in p["searches"]
+    }
+
+
+def test_research_checklist_promises_no_results():
+    """It says where to look, never what you will find. A cached answer about
+    whether a mark is free is worse than no answer."""
+    from app.compliance.research import build_research_checklist
+
+    out = build_research_checklist({"any_entity"})
+    assert "not results" in out["note"]
+    for phase in out["phases"]:
+        for search in phase["searches"]:
+            assert search["proves"] and search["if_skipped"]
+            assert "result" not in search

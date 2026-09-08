@@ -13,6 +13,7 @@ app/
   security/            tenancy (tiers, rate limits) + hashed append-only audit vault
   compliance/          grounding matrix, citation guard, traffic-light guardrails
                        obligations.py = duty -> how to close -> exposure, + IP screen
+                       research.py    = the register searches a founder must run
   search/cascade.py    local-first retrieval: L0 matrix, L1 index, L3 recorded miss
   providers/           model-agnostic router: anthropic | openai | ollama | offline
   pipeline/            anti-truncation chunk assembly → Markdown → DOCX
@@ -29,6 +30,8 @@ make test         # ruff + pytest
 make run          # uvicorn on :8000
 make smoke        # end-to-end: audit + 20-page DOCX with the offline provider
 make audit        # pip-audit against the pinned dependency set
+make validate     # plugin manifests, tool schema portability, config examples
+make validate-live # + a real MCP initialize / tools/list / tools/call
 make up / down    # docker compose stack (api + cloudflared [+ redis])
 ```
 
@@ -49,7 +52,15 @@ make up / down    # docker compose stack (api + cloudflared [+ redis])
 7. **Exposure is categorical.** "What happens if I don't" names kinds of
    consequence, never an amount, a limitation period or a section number.
 
-See `SECURITY.md` for the audit findings and the assumptions this system
+8. **A token budget is not a safety dial.** `sections` may drop optional blocks;
+   the lane, the halt notice, the counsel brief and every RED signal are
+   unconditional.
+9. **Tool schemas ship inlined.** No `$defs`/`$ref` — several function-calling
+   runtimes ignore them, and the failure mode is an enum silently accepting
+   any string.
+
+See `docs/INSTALL_ANY_PLATFORM.md` for the two install paths,
+`docs/LOCAL_TESTING.md` to run it on a Mac, `SECURITY.md` for the audit findings and the assumptions this system
 refuses to make, and `docs/SEARCH_DESIGN.md` for the retrieval cascade.
 
 ## Agent

@@ -150,23 +150,32 @@ class AuditVault:
             record_hash = hashlib.sha256(self._canonical_bytes(payload)).hexdigest()
             payload["record_hash"] = record_hash
 
-            is_new_file = not self._path.exists()
-            with self._path.open("a", encoding="utf-8") as fh:
-                fh.write(json.dumps(payload, separators=(",", ":")))
-                fh.write("\n")
-                fh.flush()
-                os.fsync(fh.fileno())
-            if is_new_file:
-                try:
-                    os.chmod(self._path, 0o600)
-                except OSError:  # pragma: no cover - platform dependent
-                    pass
+            # The fsync stays — durability is the whole point of the vault — but it
+            # runs on a worker thread. On the event loop it blocks every other
+            # in-flight request behind one disk sync, which on a real disk is
+            # milliseconds, not microseconds. The lock above still serialises the
+            # chain, so ordering and hash linkage are unchanged.
+            await asyncio.to_thread(self._write_line, payload)
 
             self._seq = seq
             self._prev_hash = record_hash
             self._record_count += 1
 
             return AuditVaultRecord.model_validate(payload)
+
+    def _write_line(self, payload: dict) -> None:
+        """Blocking append + fsync. Called only from a worker thread."""
+        is_new_file = not self._path.exists()
+        with self._path.open("a", encoding="utf-8") as fh:
+            fh.write(json.dumps(payload, separators=(",", ":")))
+            fh.write("\n")
+            fh.flush()
+            os.fsync(fh.fileno())
+        if is_new_file:
+            try:
+                os.chmod(self._path, 0o600)
+            except OSError:  # pragma: no cover - platform dependent
+                pass
 
     # -- reads ------------------------------------------------------------
     def record_count(self) -> int:

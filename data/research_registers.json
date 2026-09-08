@@ -1,0 +1,227 @@
+{
+  "version": 1,
+  "compiled_on": "2026-09-08",
+  "note": "Official registers a founder should search before building, not after. Each entry says what the search PROVES and what a skipped search costs. URLs are the official register only. Nothing here asserts what a search will return.",
+  "registers": [
+    {
+      "id": "reg.mca.name",
+      "name": "MCA company and LLP name search",
+      "authority": "Ministry of Corporate Affairs",
+      "url": "https://www.mca.gov.in",
+      "phase": "name_and_identity",
+      "applies_when": ["any_entity"],
+      "proves": "Whether the name you want is already taken on the company register, and whether a close variant exists.",
+      "if_skipped": "Name reservation is rejected, or worse, accepted and later challenged by an existing proprietor. Every artefact carrying the name has to be reissued.",
+      "statutory": true
+    },
+    {
+      "id": "reg.tm.search",
+      "name": "Trade mark register search, by class",
+      "authority": "Controller General of Patents, Designs and Trade Marks",
+      "url": "https://ipindia.gov.in",
+      "phase": "name_and_identity",
+      "applies_when": ["any_entity"],
+      "proves": "Whether an identical or deceptively similar mark is already registered or applied for in the classes you will trade in. A clear company-register search does not imply a clear trade-mark search — they are different registers with different tests.",
+      "if_skipped": "Opposition or a passing-off claim after launch, forcing a rebrand once the name is on contracts, invoices and store listings.",
+      "statutory": true
+    },
+    {
+      "id": "reg.mca.director",
+      "name": "MCA director / DIN master data and disqualification list",
+      "authority": "Ministry of Corporate Affairs",
+      "url": "https://www.mca.gov.in",
+      "phase": "counterparty_diligence",
+      "applies_when": ["any_entity"],
+      "proves": "Which other companies a prospective co-founder or director is on the board of, and whether they are currently disqualified from being appointed.",
+      "if_skipped": "A disqualified director invalidates appointments and filings made on their signature, and a co-founder's undisclosed struck-off company surfaces at the worst possible time.",
+      "statutory": true
+    },
+    {
+      "id": "reg.mca.charges",
+      "name": "MCA index of charges",
+      "authority": "Ministry of Corporate Affairs",
+      "url": "https://www.mca.gov.in",
+      "phase": "counterparty_diligence",
+      "applies_when": ["foreign_investment", "securities_or_investment", "lending_or_credit"],
+      "proves": "Whether a company you are investing in, acquiring or lending to has already charged its assets to someone else.",
+      "if_skipped": "You take security that ranks behind an existing charge, or buy assets that are already encumbered.",
+      "statutory": true
+    },
+    {
+      "id": "reg.gst.taxpayer",
+      "name": "GST taxpayer search (GSTIN verification)",
+      "authority": "Goods and Services Tax Network",
+      "url": "https://www.gst.gov.in",
+      "phase": "counterparty_diligence",
+      "applies_when": ["supplies_goods_or_services", "sells_to_consumers"],
+      "proves": "That a vendor's or customer's GSTIN is live, belongs to the legal name on the invoice, and is registered in the state claimed.",
+      "if_skipped": "Input credit denied on invoices from a cancelled or fake registration, recovered from you rather than from the supplier.",
+      "statutory": true
+    },
+    {
+      "id": "reg.udyam",
+      "name": "Udyam registration search",
+      "authority": "Ministry of Micro, Small and Medium Enterprises",
+      "url": "https://udyamregistration.gov.in",
+      "phase": "counterparty_diligence",
+      "applies_when": ["supplies_goods_or_services", "government_contracting", "establishes_industrial_unit"],
+      "proves": "Whether a supplier is a registered micro or small enterprise, which starts a statutory payment clock you cannot contract out of.",
+      "if_skipped": "Compounded interest accrues on late payment to an MSME supplier, and the expense can be disallowed for tax.",
+      "statutory": true
+    },
+    {
+      "id": "reg.epfo.establishment",
+      "name": "EPFO establishment search",
+      "authority": "Employees' Provident Fund Organisation",
+      "url": "https://www.epfindia.gov.in",
+      "phase": "counterparty_diligence",
+      "applies_when": ["employs_persons", "engages_contract_labour"],
+      "proves": "Whether an establishment — yours, or a manpower contractor's — holds a live PF code and is filing.",
+      "if_skipped": "A contractor who is not remitting makes the principal employer answerable for the contributions.",
+      "statutory": true
+    },
+    {
+      "id": "reg.ecourts",
+      "name": "Case status search (eCourts / High Court portals)",
+      "authority": "eCommittee, Supreme Court of India",
+      "url": "https://ecourts.gov.in",
+      "phase": "counterparty_diligence",
+      "applies_when": ["foreign_investment", "securities_or_investment", "government_contracting"],
+      "proves": "Pending litigation against a prospective co-founder, key hire, acquisition target or major supplier.",
+      "if_skipped": "You inherit a dispute you priced at zero. This is the search investors run on you, so run it first.",
+      "statutory": false
+    },
+    {
+      "id": "reg.ibbi",
+      "name": "IBBI insolvency and bankruptcy records",
+      "authority": "Insolvency and Bankruptcy Board of India",
+      "url": "https://ibbi.gov.in",
+      "phase": "counterparty_diligence",
+      "applies_when": ["lending_or_credit", "securities_or_investment", "government_contracting"],
+      "proves": "Whether a counterparty is in an insolvency process, which changes who can validly sign and what a payment to them means.",
+      "if_skipped": "A payment or contract entered into during a moratorium can be unwound.",
+      "statutory": true
+    },
+    {
+      "id": "reg.egazette",
+      "name": "Gazette of India — commencement and amendment notifications",
+      "authority": "Department of Publication",
+      "url": "https://egazette.gov.in",
+      "phase": "rule_currency",
+      "applies_when": ["any_entity"],
+      "proves": "Whether an Act you are planning around is actually in force, and which provisions have been brought into effect. Passage and commencement are different dates, and some provisions never commence.",
+      "if_skipped": "You build for a rule that is not yet in force, or miss one that came into force last quarter.",
+      "statutory": true
+    },
+    {
+      "id": "reg.rbi.authorised",
+      "name": "RBI lists of authorised payment system operators and registered NBFCs",
+      "authority": "Reserve Bank of India",
+      "url": "https://www.rbi.org.in",
+      "phase": "sector_licence",
+      "applies_when": ["holds_customer_funds", "operates_escrow", "payment_aggregation", "lending_or_credit", "cross_border_payments"],
+      "proves": "Whether the activity you are describing is one only an authorised entity may carry on, and whether your intended partner actually holds that authorisation.",
+      "if_skipped": "You build a regulated business on an unauthorised partner, or on the assumption that you do not need authorisation yourself. This is the single most common fatal assumption in Indian fintech.",
+      "statutory": true
+    },
+    {
+      "id": "reg.sebi.intermediaries",
+      "name": "SEBI registered intermediaries search",
+      "authority": "Securities and Exchange Board of India",
+      "url": "https://www.sebi.gov.in",
+      "phase": "sector_licence",
+      "applies_when": ["securities_or_investment"],
+      "proves": "Whether an advisory, distribution or research feature you are planning requires registration, and whether a partner holds it.",
+      "if_skipped": "Unregistered investment advice is an enforcement matter, and 'we only show information' is a distinction the regulator, not you, decides.",
+      "statutory": true
+    },
+    {
+      "id": "reg.irdai.intermediaries",
+      "name": "IRDAI registered insurance intermediaries",
+      "authority": "Insurance Regulatory and Development Authority of India",
+      "url": "https://irdai.gov.in",
+      "phase": "sector_licence",
+      "applies_when": ["insurance_distribution"],
+      "proves": "Whether the distribution model you have in mind is a registered category, and which one.",
+      "if_skipped": "Commission arrangements outside a registered category are not enforceable and are an enforcement risk for both sides.",
+      "statutory": true
+    },
+    {
+      "id": "reg.inpass",
+      "name": "Patent and design search (InPASS)",
+      "authority": "Controller General of Patents, Designs and Trade Marks",
+      "url": "https://ipindia.gov.in",
+      "phase": "ip",
+      "applies_when": ["develops_proprietary_technology", "establishes_industrial_unit"],
+      "proves": "Whether an incumbent holds a granted patent or a registered design covering the feature you intend to build. A freedom-to-operate signal, not an opinion.",
+      "if_skipped": "You build a feature you must later remove, and you learn about it from a notice rather than from a search.",
+      "statutory": true
+    },
+    {
+      "id": "reg.copyright",
+      "name": "Copyright register search and voluntary registration",
+      "authority": "Copyright Office",
+      "url": "https://copyright.gov.in",
+      "phase": "ip",
+      "applies_when": ["uses_third_party_content", "user_generated_content", "operates_digital_service"],
+      "proves": "Registration is not required for copyright to exist, but the register is evidence of title and it is what a court looks at first in a dispute.",
+      "if_skipped": "Ownership is arguable at exactly the moment you need it to be obvious.",
+      "statutory": true
+    },
+    {
+      "id": "reg.dpiit.startup",
+      "name": "DPIIT Startup India recognition",
+      "authority": "Department for Promotion of Industry and Internal Trade",
+      "url": "https://www.startupindia.gov.in",
+      "phase": "entity_formation",
+      "applies_when": ["any_entity"],
+      "proves": "Whether the entity qualifies for recognition, which gates several tax and procurement benefits and some state incentives.",
+      "if_skipped": "Benefits with eligibility windows are missed permanently — recognition cannot be backdated to cover a period already elapsed.",
+      "statutory": true
+    },
+    {
+      "id": "reg.dgft.iec",
+      "name": "Import Export Code (IEC) status",
+      "authority": "Directorate General of Foreign Trade",
+      "url": "https://www.dgft.gov.in",
+      "phase": "sector_licence",
+      "applies_when": ["cross_border_payments", "foreign_investment"],
+      "proves": "Whether you hold a live IEC, which is required before goods or certain services cross the border, and whether it has been updated in the current year.",
+      "if_skipped": "Consignments and remittances are held at the bank or the port, which is a cash-flow event before it is a legal one.",
+      "statutory": true
+    },
+    {
+      "id": "reg.state.singlewindow",
+      "name": "State single-window clearance portal",
+      "authority": "State industries department",
+      "url": "",
+      "phase": "premises",
+      "applies_when": ["has_workplace_in_state", "establishes_industrial_unit", "carries_on_profession_in_state"],
+      "proves": "Which state approvals your specific address and activity attract, and the deemed-approval clocks that apply. This portal differs by state and so does the list behind it — never assume a neighbouring state's list.",
+      "if_skipped": "An approval nobody told you about surfaces at inspection, when the premises are already fitted out.",
+      "statutory": true
+    },
+    {
+      "id": "reg.state.shops",
+      "name": "State Shops and Establishments registration portal",
+      "authority": "State labour department",
+      "url": "",
+      "phase": "premises",
+      "applies_when": ["has_workplace_in_state", "employs_persons"],
+      "proves": "The registration your actual working address requires — including a co-working desk — and its own renewal cycle, which is a state clock and not the union one.",
+      "if_skipped": "Inspection findings and closure action against premises that are otherwise perfectly ordinary.",
+      "statutory": true
+    },
+    {
+      "id": "reg.state.proftax",
+      "name": "State professional tax registration portal",
+      "authority": "State commercial taxes department",
+      "url": "",
+      "phase": "premises",
+      "applies_when": ["employs_persons", "carries_on_profession_in_state"],
+      "proves": "Whether the state levies professional tax, at what slab, and whether you need both an enrolment and a registration.",
+      "if_skipped": "Arrears recovered for the whole unregistered period, with interest, from the employer rather than the employee.",
+      "statutory": true
+    }
+  ]
+}
