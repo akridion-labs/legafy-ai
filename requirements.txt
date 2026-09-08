@@ -1,17 +1,24 @@
 # ---------------------------------------------------------------------------
 # Legafy AI — runtime dependencies (pinned for reproducible CPU-server builds)
+#
+# Pins are the versions the test suite actually passes against, not aspirational
+# ones. Every bump below closed a published advisory; re-run `pip-audit -r
+# requirements.txt` after any change and record the result in SECURITY.md.
+#
+# Removed deliberately: slowapi (rate limiting is ours, in app/security/tenancy.py)
+# and python-json-logger (stdlib logging is enough). An unused dependency is
+# attack surface with no owner.
 # ---------------------------------------------------------------------------
-fastapi==0.115.6
-uvicorn[standard]==0.34.0
-pydantic==2.10.4
-pydantic-settings==2.7.0
-python-docx==1.1.2
+fastapi==0.141.1        # <0.116 pulls a starlette with known advisories
+uvicorn[standard]==0.46.0
+starlette==1.6.0        # pinned explicitly: <1.1.0 has known advisories
+pydantic==2.13.3        # 2.10.x cannot satisfy mcp 1.30 / fastapi 0.141
+pydantic-settings==2.14.2
+python-docx==1.2.0
 httpx==0.28.1
-python-json-logger==3.2.1
-slowapi==0.1.9
 
 # --- Optional integrations (import-guarded; safe to remove) ----------------
-redis==5.2.1            # distributed rate-limit + quota backend
-mcp==1.2.0              # Model Context Protocol stdio server
+redis==8.1.0            # distributed rate-limit + quota backend
+mcp==1.30.0             # MCP server/client. <1.28.1 has 5 known advisories
 anthropic==0.42.0       # provider adapter
 openai==1.59.6          # provider adapter (also used for OpenAI-compatible endpoints)

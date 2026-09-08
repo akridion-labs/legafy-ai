@@ -34,6 +34,15 @@ class Settings(BaseSettings):
     public_base_url: str = Field(
         default="http://localhost:8000", alias="LEGAFY_PUBLIC_BASE_URL"
     )
+    cors_origins: str = Field(
+        default="",
+        alias="LEGAFY_CORS_ORIGINS",
+        description=(
+            "Comma-separated origins allowed to call this API from a browser. "
+            "Empty (the default) installs no CORS middleware at all, which is "
+            "correct for an API consumed by servers and MCP clients."
+        ),
+    )
 
     # --- Telemetry / audit vault -------------------------------------------
     telemetry_salt: str = Field(default="", alias="LEGAFY_TELEMETRY_SALT")
@@ -94,6 +103,10 @@ class Settings(BaseSettings):
         return self.env.lower() in {"production", "prod"}
 
     @property
+    def cors_origin_list(self) -> list[str]:
+        return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+
+    @property
     def providers(self) -> list[str]:
         return [p.strip().lower() for p in self.provider_chain.split(",") if p.strip()]
 
@@ -132,6 +145,11 @@ class Settings(BaseSettings):
             problems.append(
                 "LEGAFY_BOOTSTRAP_TOKENS_ENABLED=true is refused in production; "
                 "publish a real registry at LEGAFY_LICENSE_REGISTRY_PATH."
+            )
+        if "*" in self.cors_origin_list:
+            problems.append(
+                "LEGAFY_CORS_ORIGINS='*' lets any website call this authenticated API "
+                "from a browser. Name the origins you actually serve."
             )
         if not self.registry_path.exists():
             problems.append(

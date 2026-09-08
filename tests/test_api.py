@@ -66,12 +66,16 @@ def test_audit_returns_isolated_state_path(client):
     )
     assert resp.status_code == 200
     body = resp.json()
-    # Compact is the default: duties keyed by state, proofs deduped by instrument.
+    # Compact is the default: one obligation ledger tagged by jurisdiction,
+    # proofs deduped by instrument.
     assert body["jurisdictions"] == ["IN-TG"]
-    assert set(body["state_duties"]) == {"IN-TG"}
-    state_refs = {d["ref"] for d in body["state_duties"]["IN-TG"]}
-    union_refs = {d["ref"] for d in body["union_duties"]}
+    assert {o["jurisdiction"] for o in body["obligations"]} == {"IN-TG", "IN-CENTRAL"}
+    state_refs = {o["ref"] for o in body["obligations"] if o["jurisdiction"] == "IN-TG"}
+    union_refs = {o["ref"] for o in body["obligations"] if o["jurisdiction"] == "IN-CENTRAL"}
     assert not (state_refs & union_refs), "union instrument leaked into the state block"
+    # Every duty must resolve to a playbook that says how to close it and what
+    # follows if it is not closed.
+    assert all(o["playbook"] in body["playbooks"] for o in body["obligations"])
 
 
 def test_full_detail_returns_the_segregated_blocks(client):

@@ -12,6 +12,8 @@ app/
   models/schemas.py    Pydantic contracts — SINGLE source of truth for HTTP + MCP
   security/            tenancy (tiers, rate limits) + hashed append-only audit vault
   compliance/          grounding matrix, citation guard, traffic-light guardrails
+                       obligations.py = duty -> how to close -> exposure, + IP screen
+  search/cascade.py    local-first retrieval: L0 matrix, L1 index, L3 recorded miss
   providers/           model-agnostic router: anthropic | openai | ollama | offline
   pipeline/            anti-truncation chunk assembly → Markdown → DOCX
   mcp/server.py        MCP stdio server exposing the same tools
@@ -26,6 +28,7 @@ make install      # venv + dev deps
 make test         # ruff + pytest
 make run          # uvicorn on :8000
 make smoke        # end-to-end: audit + 20-page DOCX with the offline provider
+make audit        # pip-audit against the pinned dependency set
 make up / down    # docker compose stack (api + cloudflared [+ redis])
 ```
 
@@ -40,6 +43,14 @@ make up / down    # docker compose stack (api + cloudflared [+ redis])
 4. **Pseudonymity at rest.** Business concepts are HMAC-SHA256 digested before
    any disk write or log line.
 5. **Truncation is a bug.** Long-document paths must detect and continue.
+6. **No local answer is an answer.** A retrieval miss is recorded as a coverage
+   gap and returned as unanswered. It is never backfilled from the open web or
+   from the model's own memory.
+7. **Exposure is categorical.** "What happens if I don't" names kinds of
+   consequence, never an amount, a limitation period or a section number.
+
+See `SECURITY.md` for the audit findings and the assumptions this system
+refuses to make, and `docs/SEARCH_DESIGN.md` for the retrieval cascade.
 
 ## Agent
 

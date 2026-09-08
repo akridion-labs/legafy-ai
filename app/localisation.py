@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 from dataclasses import dataclass
 from functools import lru_cache
 from typing import Any
@@ -40,6 +41,13 @@ from app.config import REPO_ROOT
 log = logging.getLogger("legafy.localisation")
 
 GLOSSARY_DIR = REPO_ROOT / "data" / "glossary"
+
+# `language` arrives from the request body, and it is used to build a file path.
+# Without this, `language="../license_registry.example"` reads a file outside the
+# glossary directory, and the difference between "parsed but wrong shape" and
+# "no such file" is an enumeration oracle for what exists on disk. A language tag
+# is a short alphanumeric code; anything else is refused before it touches a path.
+LANGUAGE_CODE_RE = re.compile(r"^[a-z]{2,3}(?:-[a-z]{2,8})?$", re.IGNORECASE)
 
 # Keys whose values are explanation and may be translated. Anything not listed
 # is left alone — an allow-list, so a new field is untranslated until someone
@@ -92,8 +100,12 @@ class Glossary:
 
 @lru_cache(maxsize=8)
 def load_glossary(code: str) -> Glossary | None:
-    path = GLOSSARY_DIR / f"{code.lower()}.json"
-    if not path.exists():
+    if not code or not LANGUAGE_CODE_RE.match(code):
+        log.warning("refused malformed language code %r", code[:32])
+        return None
+    path = (GLOSSARY_DIR / f"{code.lower()}.json").resolve()
+    # Belt and braces: even with the regex, never read outside the directory.
+    if path.parent != GLOSSARY_DIR.resolve() or not path.is_file():
         return None
     raw = json.loads(path.read_text(encoding="utf-8"))
     return Glossary(

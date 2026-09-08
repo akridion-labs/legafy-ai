@@ -37,6 +37,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 import sqlite3
 import uuid
@@ -112,7 +113,11 @@ class QuestionCorpus:
     def __init__(self, path: Path | None = None) -> None:
         self.path = path or (get_settings().generated_path / "question_corpus.db")
         self.path.parent.mkdir(parents=True, exist_ok=True)
+        # This file holds user questions. It must not be group- or world-readable.
+        create = not self.path.exists()
         self._conn = sqlite3.connect(str(self.path), check_same_thread=False)
+        if create:
+            os.chmod(self.path, 0o600)
         self._conn.row_factory = sqlite3.Row
         self._conn.executescript(SCHEMA)
         self._conn.commit()

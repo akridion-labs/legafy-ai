@@ -64,6 +64,8 @@ class ActivityFlag(str, Enum):
     CROSS_BORDER_PAYMENTS = "cross_border_payments"
     MULTI_STATE_OPERATIONS = "multi_state_operations"
     USER_GENERATED_CONTENT = "user_generated_content"
+    USES_THIRD_PARTY_CONTENT = "uses_third_party_content"
+    DEVELOPS_PROPRIETARY_TECHNOLOGY = "develops_proprietary_technology"
     AUTOMATED_DECISIONING = "automated_decisioning"
     GOVERNMENT_CONTRACTING = "government_contracting"
 
@@ -232,6 +234,21 @@ class RegionalComplianceAuditResponse(BaseModel):
     union: JurisdictionBlock
     states: list[JurisdictionBlock]
     traffic_light: TrafficLightVerdictModel
+    legal_obligations: dict[str, Any] = Field(
+        default_factory=dict,
+        description=(
+            "Every applicable duty with how to close it and what exposure follows if it is "
+            "not closed. Consequences are categorical; amounts are never stated unless "
+            "verified against the primary source."
+        ),
+    )
+    ip_screen: dict[str, Any] = Field(
+        default_factory=dict,
+        description=(
+            "Copyright, trade-mark, patent and trade-secret questions inferred from the "
+            "description. Advisory only — it never changes the traffic-light verdict."
+        ),
+    )
     source_whitelist: list[str]
     provenance_warning: str
     disclaimer: str

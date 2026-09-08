@@ -7,13 +7,15 @@
   "verification_status": "SEED_UNVERIFIED",
   "verification_note": "Instrument titles and years are seed metadata compiled for routing. Section numbers, sub-clauses, thresholds and penalty amounts are deliberately absent and must be populated only from the whitelisted primary sources below by a reviewer before this file is marked VERIFIED.",
   "source_whitelist": [
+    "https://copyright.gov.in",
+    "https://egazette.gov.in",
+    "https://ipindia.gov.in",
+    "https://labour.gov.in",
+    "https://www.gst.gov.in",
+    "https://www.incometax.gov.in",
     "https://www.indiacode.nic.in",
     "https://www.mca.gov.in",
-    "https://www.meity.gov.in",
-    "https://labour.gov.in",
-    "https://www.incometax.gov.in",
-    "https://www.gst.gov.in",
-    "https://egazette.gov.in"
+    "https://www.meity.gov.in"
   ],
   "instruments": [
     {
@@ -359,6 +361,96 @@
           "key": "ecommerce_disclosures",
           "summary": "Consumer-facing digital commerce carries disclosure, grievance-officer and unfair-trade-practice constraints.",
           "lane": "AMBER"
+        }
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    },
+    {
+      "id": "IN-COPY-1957",
+      "title": "Copyright Act, 1957",
+      "domain": "intellectual_property",
+      "authority": "Copyright Office, Department for Promotion of Industry and Internal Trade",
+      "citation_url": "https://copyright.gov.in",
+      "applies_when": [
+        "any_entity"
+      ],
+      "obligations": [
+        {
+          "key": "ownership_assignment",
+          "summary": "Copyright in code, designs, copy and other works vests first in their author. The company owns them only through a written assignment or a qualifying employment relationship.",
+          "lane": "AMBER"
+        },
+        {
+          "key": "third_party_licensing",
+          "summary": "Use of third-party works — datasets, media, catalogues, open-source components — requires a licence whose scope covers the actual use, including any downstream distribution.",
+          "lane": "AMBER",
+          "applies_when": [
+            "uses_third_party_content",
+            "user_generated_content",
+            "operates_digital_service"
+          ]
+        },
+        {
+          "key": "intermediary_takedown",
+          "summary": "A platform hosting user uploads must operate a working notice-and-takedown route and a published grievance contact to be treated as an intermediary rather than as the publisher.",
+          "lane": "AMBER",
+          "applies_when": [
+            "user_generated_content"
+          ]
+        }
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    },
+    {
+      "id": "IN-TM-1999",
+      "title": "Trade Marks Act, 1999",
+      "domain": "intellectual_property",
+      "authority": "Controller General of Patents, Designs and Trade Marks",
+      "citation_url": "https://ipindia.gov.in",
+      "applies_when": [
+        "any_entity"
+      ],
+      "obligations": [
+        {
+          "key": "name_clearance",
+          "summary": "A product or company name should be cleared against the register and against existing traders in the same class before it is used in commerce; registration of a company name is not a trade-mark right.",
+          "lane": "AMBER"
+        },
+        {
+          "key": "mark_registration",
+          "summary": "Registration is applied for in the classes of goods or services actually traded in, and is maintained on its own renewal cycle.",
+          "lane": "GREEN"
+        }
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    },
+    {
+      "id": "IN-PAT-1970",
+      "title": "Patents Act, 1970",
+      "domain": "intellectual_property",
+      "authority": "Controller General of Patents, Designs and Trade Marks",
+      "citation_url": "https://ipindia.gov.in",
+      "applies_when": [
+        "develops_proprietary_technology"
+      ],
+      "obligations": [
+        {
+          "key": "patentability_and_disclosure",
+          "summary": "Patentable subject matter is limited, and public disclosure before filing can defeat an application. Whether a software or business-method invention qualifies is a question for a practitioner, not an assumption.",
+          "lane": "AMBER"
+        },
+        {
+          "key": "foreign_filing_route",
+          "summary": "Filing abroad first, from India, is a regulated route with its own permission requirement.",
+          "lane": "RED",
+          "applies_when": [
+            "foreign_investment",
+            "cross_border_payments",
+            "multi_state_operations"
+          ]
         }
       ],
       "penalty_schedule": null,

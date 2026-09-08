@@ -5,6 +5,7 @@ from __future__ import annotations
 import pytest
 
 from app.compact import compact_audit, savings
+from app.compliance.obligations import build_obligation_ledger
 from app.search.corpus import QuestionCorpus, scrub
 from app.search.intent import PhraseTrie, analyse, build_fts_query, expand_terms
 from app.sources.store import (
@@ -186,6 +187,8 @@ FULL = {
     "disclaimer": "z" * 400,
     "source_whitelist": ["https://labour.telangana.gov.in"] * 10,
 }
+# The audit always attaches the ledger; the fixture is the same shape it is built from.
+FULL["legal_obligations"] = build_obligation_ledger(FULL)
 
 
 def test_compact_keeps_every_decision_critical_field():
@@ -203,7 +206,7 @@ def test_compact_dedupes_proofs_and_instrument_derived_signals():
     c = compact_audit(FULL)
     # The instrument appears once in proofs, referenced by id from the duty.
     assert list(c["proofs"]) == ["TG-SE-1988"]
-    assert c["state_duties"]["IN-TG"][0]["ref"] == "TG-SE-1988"
+    assert c["obligations"][0]["ref"] == "TG-SE-1988"
     # The AMBER signal restating that duty is gone.
     assert c["amber"] == []
 

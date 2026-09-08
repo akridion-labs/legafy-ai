@@ -140,7 +140,7 @@ class AuditVault:
                 "industry_vertical": industry_vertical,
                 "jurisdiction_codes": list(jurisdiction_codes),
                 "activity_flags": list(activity_flags),
-                "traffic_light_lane": traffic_light_lane.value,
+                "traffic_light_lane": getattr(traffic_light_lane, "value", traffic_light_lane),
                 "red_signal_ids": list(red_signal_ids or []),
                 "provider_used": provider_used,
                 "outcome": outcome,

@@ -102,12 +102,19 @@ app = FastAPI(
     version=__version__,
     lifespan=lifespan,
 )
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["GET", "POST"],
-    allow_headers=["*"],
-)
+# No CORS by default. This API is called by servers and MCP clients, which are
+# not subject to CORS at all; a wildcard here only widens the browser attack
+# surface on an endpoint that takes a bearer token. Set LEGAFY_CORS_ORIGINS to
+# the specific origins of a first-party web UI if one is ever built.
+_cors_origins = get_settings().cors_origin_list
+if _cors_origins:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=_cors_origins,
+        allow_methods=["GET", "POST"],
+        allow_headers=["authorization", "content-type", "x-request-id"],
+        max_age=600,
+    )
 
 
 @app.middleware("http")

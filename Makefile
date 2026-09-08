@@ -2,7 +2,7 @@
 # Legafy AI — developer & operations entrypoints
 # =============================================================================
 
-.PHONY: help install lint fmt test run smoke mcp build up up-host up-full down logs ps tunnel bootstrap clean audit-verify watch taxonomy
+.PHONY: help install lint fmt test audit run smoke mcp build up up-host up-full down logs ps tunnel bootstrap clean audit-verify watch taxonomy
 
 VENV        ?= .venv
 # Interpreter used to CREATE the venv. Override when your default python3 is newer
@@ -28,6 +28,10 @@ fmt: ## Run ruff format
 
 test: ## Run the pytest suite
 	$(VENV)/bin/pytest -q
+
+audit: ## Scan pinned dependencies for published advisories
+	$(PIP) install -q pip-audit
+	$(VENV)/bin/pip-audit -r requirements.txt
 
 run: ## Run the API locally with autoreload
 	$(VENV)/bin/uvicorn app.main:app --reload --host 0.0.0.0 --port 8000

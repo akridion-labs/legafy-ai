@@ -14,6 +14,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from typing import Any
 
+from app.compliance.obligations import build_obligation_ledger, screen_ip
 from app.compliance.registry import JURISDICTION_REGISTRY, Jurisdiction
 from app.compliance.traffic_light import TRAFFIC_LIGHT
 from app.models.schemas import (
@@ -134,6 +135,8 @@ async def execute_regional_compliance_audit(
         union=union_block,
         states=state_blocks,
         traffic_light=verdict.to_model(),
+        legal_obligations=build_obligation_ledger(grounding),
+        ip_screen=screen_ip(request.business_concept, request.industry_vertical, flags),
         source_whitelist=grounding.get("source_whitelist", []),
         provenance_warning=grounding.get("provenance_warning", ""),
         disclaimer=LEGAFY_DISCLAIMER,

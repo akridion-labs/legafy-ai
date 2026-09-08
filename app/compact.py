@@ -68,29 +68,22 @@ def compact_audit(full: dict[str, Any]) -> dict[str, Any]:
     """
     traffic = full.get("traffic_light", {})
     proofs: dict[str, dict[str, Any]] = {}
-    duties: dict[str, list[dict[str, Any]]] = {}
 
-    def collect(block: dict[str, Any]) -> list[dict[str, Any]]:
-        out = []
+    def collect_proofs(block: dict[str, Any]) -> None:
         verification = block.get("verification_status", "SEED_UNVERIFIED")
         for instrument in block.get("instruments", []):
             proofs.setdefault(
                 instrument["id"], _proof(instrument, block["code"], verification)
             )
-            for ob in instrument.get("obligations", []):
-                out.append(
-                    {
-                        "lane": str(ob.get("lane", "AMBER")).upper(),
-                        "duty": ob.get("summary", ""),
-                        "ref": instrument["id"],
-                    }
-                )
-        return out
 
-    union_duties = collect(full.get("union", {}))
+    collect_proofs(full.get("union", {}))
     states = full.get("states", [])
     for state in states:
-        duties[state["code"]] = collect(state)
+        collect_proofs(state)
+
+    # The obligation ledger carries every duty with its remediation and exposure,
+    # so there is no separate duty list to send.
+    ledger = full.get("legal_obligations") or {}
 
     # Signals whose instrument_refs are already represented in the duty list add
     # no information — they are the same sentence with a different label.
@@ -114,12 +107,33 @@ def compact_audit(full: dict[str, Any]) -> dict[str, Any]:
         "lane": traffic.get("lane", "AMBER"),
         "automation_permitted": traffic.get("automation_permitted", False),
         "jurisdictions": [s["code"] for s in states],
-        "union_duties": union_duties,
-        "state_duties": duties,
         "proofs": proofs,
         "red": signals("red_lane", True),
         "amber": signals("amber_lane", True),
     }
+
+    # verify_at duplicates proofs[ref].url and quantum is constant; both drop.
+    compact["obligations"] = [
+        {k: v for k, v in ob.items() if k not in {"verify_at", "quantum", "tier"}}
+        for ob in ledger.get("obligations", [])
+    ]
+    compact["playbooks"] = ledger.get("playbooks", {})
+    compact["quantum_note"] = ledger.get("quantum_note", "")
+
+    screen = full.get("ip_screen") or {}
+    if screen.get("findings"):
+        compact["ip_risks"] = [
+            {
+                "id": f["id"],
+                "lane": f["lane"],
+                "ask": f["question"],
+                "check": f["check"],
+                "if_ignored": f["if_ignored"],
+                "matched_on": f["matched_on"],
+            }
+            for f in screen["findings"]
+        ]
+        compact["ip_baseline"] = screen.get("baseline_clearance", [])
 
     if traffic.get("mandatory_counsel_notice"):
         compact["halt"] = traffic["mandatory_counsel_notice"]

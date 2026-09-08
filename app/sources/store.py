@@ -29,6 +29,8 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import os
+import re
 import sqlite3
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -172,11 +174,46 @@ def review_priority(
     return round(authority_weight * magnitude * coverage * recency * exposure_factor, 6)
 
 
+class MalformedQuery(ValueError):
+    """The caller's search text is not valid FTS5 syntax."""
+
+
+def sanitise_fts_query(query: str) -> str:
+    """Make an arbitrary user string safe to hand to FTS5 MATCH.
+
+    FTS5 has its own query language, so raw user text can be a syntax error
+    ("a OR"), an unterminated string, or a column filter that reaches for a
+    column that does not exist. None of those are SQL injection — parameters are
+    bound — but each one is an unhandled OperationalError, which is a 500 and a
+    leaked internal message. Quoting each token as a literal removes the whole
+    class: the query still works, and no user input is ever parsed as syntax.
+    """
+    tokens = re.findall(r'"[^"]*"|\S+', query or "")
+    cleaned: list[str] = []
+    for token in tokens:
+        bare = token.strip('"').replace('"', "")
+        bare = re.sub(r"[^\w\s.\-/]", " ", bare, flags=re.UNICODE).strip()
+        if not bare:
+            continue
+        # Every token is quoted, not just multi-word ones. A bare token that
+        # happens to be an FTS5 operator ("a OR" -> "a OR OR") is still a syntax
+        # error; quoting turns it into the literal word the user typed.
+        cleaned.append(f'"{bare}"')
+    if not cleaned:
+        raise MalformedQuery("Query contained no searchable terms.")
+    return " OR ".join(cleaned[:32])
+
+
 class SourceStore:
     def __init__(self, path: Path | None = None) -> None:
         self.path = path or (get_settings().generated_path / "legal_sources.db")
         self.path.parent.mkdir(parents=True, exist_ok=True)
+        # The index holds government text and the change queue; the corpus holds
+        # user questions. Neither is world-readable on a shared box.
+        create = not self.path.exists()
         self._conn = sqlite3.connect(str(self.path), check_same_thread=False)
+        if create:
+            os.chmod(self.path, 0o600)
         self._conn.row_factory = sqlite3.Row
         self._conn.executescript(SCHEMA)
         self._conn.commit()
@@ -286,6 +323,7 @@ class SourceStore:
         applies to the grounding matrix. Softening this into a boost is the one
         change that would quietly break the product.
         """
+        query = sanitise_fts_query(query)
         sql = [
             """SELECT d.doc_id, d.title, d.url, d.authority_tier, d.jurisdiction,
                       d.instrument_ids, d.last_changed, d.revision, bm25(documents_fts) AS bm25

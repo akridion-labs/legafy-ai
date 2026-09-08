@@ -25,10 +25,11 @@ from app.models.schemas import (
     ReviewQueueRequest,
     TenantContext,
 )
+from app.search.cascade import backlog_report, resolve
 from app.search.corpus import get_corpus
 from app.search.intent import analyse, build_fts_query
 from app.service import run_audit, run_generation
-from app.sources.store import CITABLE_AUTHORITY_FLOOR, get_store
+from app.sources.store import CITABLE_AUTHORITY_FLOOR, MalformedQuery, get_store
 
 
 @dataclass(frozen=True)
@@ -109,12 +110,31 @@ async def _search_sources(payload: dict, *, request_id: str, tenant: TenantConte
     if jurisdiction is None and analysis and len(analysis.jurisdictions) == 1:
         jurisdiction = analysis.jurisdictions[0]
 
-    hits = store.search(
-        fts_query,
-        jurisdiction=jurisdiction,
-        limit=request.limit,
-        citable_only=not request.include_non_citable,
-    )
+    try:
+        hits = store.search(
+            fts_query,
+            jurisdiction=jurisdiction,
+            limit=request.limit,
+            citable_only=not request.include_non_citable,
+        )
+    except MalformedQuery as exc:
+        return {
+            "success": False,
+            "error": "unsearchable_query",
+            "message": str(exc),
+            "query": request.query,
+            "hits": [],
+        }
+
+    # Local-first: when the index holds nothing, say so and record the gap for
+    # the compliance team rather than letting the caller fill the silence.
+    cascade = None
+    if not hits:
+        result = resolve(
+            request.query, jurisdiction=jurisdiction, limit=request.limit, store=store
+        )
+        cascade = result.as_dict()
+
     return {
         "success": True,
         "query": request.query,
@@ -122,6 +142,7 @@ async def _search_sources(payload: dict, *, request_id: str, tenant: TenantConte
         "analysis": analysis.as_dict() if analysis else None,
         "jurisdiction": jurisdiction,
         "hits": hits,
+        "cascade": cascade,
         "index": store.stats(),
         "usage_note": (
             "These are pointers to primary sources, not assertions about their contents. "
@@ -141,12 +162,16 @@ async def _review_queue(payload: dict, *, request_id: str, tenant: TenantContext
         "pending": store.pending_reviews(
             limit=request.limit, jurisdiction=request.jurisdiction
         ),
+        # The other half of the legal team's inbox: questions the corpus could
+        # not answer at all, ordered by how many people hit the same gap.
+        "coverage_gaps": backlog_report(limit=request.limit),
         "index": store.stats(),
         "note": (
-            "Detected changes at whitelisted primary sources, ordered by review priority "
-            "(authority x change magnitude x instrument coverage x recency x exposure). "
-            "A queued item is a prompt for a human to read the source. It is not a finding, "
-            "and nothing here has changed any answer the engine gives."
+            "Two queues. `pending` is detected change at whitelisted primary sources, ordered "
+            "by review priority (authority x change magnitude x instrument coverage x recency x "
+            "exposure). `coverage_gaps` is questions the local corpus could not answer, ordered "
+            "by how often they were asked — that is the crawl backlog. Both are prompts for a "
+            "human to read a source. Neither has changed any answer the engine gives."
         ),
     }
 
@@ -158,7 +183,18 @@ never be merged), plus a Traffic-Light verdict.
 
 Use the returned data as your ONLY source for naming statutes. The response deliberately contains
 no section numbers, penalty amounts or thresholds — do not supply them from your own memory. If the
-verdict is RED, tell the user to halt and retain counsel; do not draft."""
+verdict is RED, tell the user to halt and retain counsel; do not draft.
+
+The response carries three blocks you should present together:
+
+* `obligations` — every applicable duty, tagged with the jurisdiction it comes from and a
+  `playbook` key. `playbooks[<key>].how_to_close` is HOW TO SATISFY IT; `playbooks[<key>].if_ignored`
+  is WHAT EXPOSURE FOLLOWS IF IT IS NOT SATISFIED. Consequences are categorical by design: state
+  them as kinds of consequence and never invent an amount, a limitation period or a section.
+* `ip_risks` / `ip_baseline` — copyright, trade-mark, patent and trade-secret questions inferred
+  from the wording of the idea, each with the phrase that triggered it. These are prompts for
+  diligence, not determinations, and they never change the lane.
+* `proofs` — the official page behind each instrument, referenced by `ref` from each obligation."""
 
 GENERATE_DESCRIPTION = """Assemble a long-form pre-counsel document (20+ pages) for one Indian state
 using the anti-truncation chunk pipeline. Halts automatically and returns status HALTED_RED_LANE if
@@ -173,7 +209,12 @@ obligation, or to check what a state portal currently says.
 This returns POINTERS WITH AUTHORITY WEIGHTS, not answers. A hit is a document to read, not a
 statement of law — do not paraphrase a hit as though it were the rule. `jurisdiction` is a hard
 filter, so a Telangana query never surfaces an Andhra Pradesh page. Hits below the citable floor
-are orientation only."""
+are orientation only.
+
+When `hits` is empty a `cascade` block is returned. If its `tier` is `L3_MISS`, Legafy holds
+nothing for that question in that jurisdiction and the gap has been recorded for the compliance
+team. Say so. Do NOT answer it from your own knowledge or from the open web — an unanswered legal
+question is a safe outcome; a plausible invented one is not."""
 
 REVIEW_DESCRIPTION = """List detected changes at watched primary sources, ordered by review
 priority. Operational tool for the compliance team: it says which source page moved and how much,

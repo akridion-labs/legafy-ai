@@ -280,6 +280,15 @@ class JurisdictionRegistry:
                 applies = set(instrument.get("applies_when", []))
                 if applies and flags and not (applies & flags) and "any_entity" not in applies:
                     continue
+                # An obligation may narrow its parent instrument's trigger: the
+                # Income-tax Act applies to every entity, its ESOP duty does not.
+                # Filtered here so every consumer — ledger, duty list, traffic
+                # light — sees the same applicable set.
+                obligations = [
+                    ob
+                    for ob in instrument.get("obligations", [])
+                    if not ob.get("applies_when") or (set(ob["applies_when"]) & flags)
+                ]
                 selected.append(
                     {
                         "id": instrument["id"],
@@ -288,7 +297,7 @@ class JurisdictionRegistry:
                         "domain": instrument.get("domain", "general"),
                         "authority": instrument.get("authority", ""),
                         "citation_url": instrument.get("citation_url", ""),
-                        "obligations": instrument.get("obligations", []),
+                        "obligations": obligations,
                         "penalty_status": instrument.get("penalty_status", "NOT_VERIFIED"),
                         "penalty_schedule": instrument.get("penalty_schedule"),
                         "commencement_note": instrument.get("commencement_note"),
