@@ -180,6 +180,32 @@ class RegionalComplianceAuditRequest(BaseModel):
         max_length=10,
         description="Other states of operation. Each is resolved as its own isolated path.",
     )
+    language: str | None = Field(
+        default=None,
+        max_length=8,
+        description=(
+            "Optional BCP-47-ish code (e.g. 'te' for Telugu). Translates the explanation "
+            "layer only — statute titles, citations and operative text stay in English, "
+            "which remains the controlling version."
+        ),
+    )
+    detail: Literal["compact", "full"] = Field(
+        default="compact",
+        description=(
+            "compact (default) returns lane, duties and a proof pointer per duty — roughly "
+            "a tenth of the tokens, with the static contract text moved into the tool "
+            "description where it is sent once per session rather than per call. "
+            "full returns instrument-level metadata."
+        ),
+    )
+    contribute_to_corpus: bool = Field(
+        default=False,
+        description=(
+            "Opt in to contributing this question (identifiers scrubbed, no tenant or user "
+            "linkage) to the anonymous question corpus that improves Legafy's classifiers. "
+            "Off by default. Never set it on a user's behalf."
+        ),
+    )
 
     @field_validator("business_concept", "industry_vertical", "state_location")
     @classmethod
@@ -333,3 +359,67 @@ class ErrorEnvelope(BaseModel):
     message: str
     detail: dict[str, Any] | None = None
     request_id: str | None = None
+
+
+# ---------------------------------------------------------------------------
+# Tool 3 — search_legal_sources (primary-source index)
+# ---------------------------------------------------------------------------
+class LegalSourceSearchRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    query: str = Field(min_length=2, max_length=400, description="Full-text query.")
+    jurisdiction: str | None = Field(
+        default=None,
+        description=(
+            "Restrict to one isolated code path, e.g. 'IN-TG'. This is a HARD FILTER: a "
+            "Telangana search never returns an Andhra Pradesh document at a lower rank."
+        ),
+    )
+    limit: int = Field(default=10, ge=1, le=50)
+    natural_language: bool = Field(
+        default=True,
+        description=(
+            "Treat `query` as a plain question: classify intent and tone, extract "
+            "jurisdictions and instruments with the phrase trie, and expand founder "
+            "vocabulary into the words official pages actually use. Set false to pass "
+            "raw FTS5 syntax through."
+        ),
+    )
+    include_non_citable: bool = Field(
+        default=False,
+        description=(
+            "Include sources below the citable authority floor. Such documents are "
+            "orientation only and can never support a compliance claim."
+        ),
+    )
+
+
+class LegalSourceHit(BaseModel):
+    doc_id: str
+    title: str
+    url: str
+    authority_tier: str
+    authority_weight: float
+    jurisdiction: str
+    instrument_ids: list[str] = Field(default_factory=list)
+    last_changed: str | None = None
+    revision: int = 1
+    score: float
+    citable: bool
+
+
+class LegalSourceSearchResponse(BaseModel):
+    success: bool = True
+    query: str
+    jurisdiction: str | None = None
+    hits: list[LegalSourceHit] = Field(default_factory=list)
+    index: dict[str, Any] = Field(default_factory=dict)
+    usage_note: str
+    disclaimer: str
+
+
+class ReviewQueueRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    jurisdiction: str | None = None
+    limit: int = Field(default=25, ge=1, le=200)

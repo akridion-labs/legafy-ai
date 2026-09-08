@@ -14,13 +14,21 @@ from typing import Any
 
 from pydantic import BaseModel
 
+from app.compact import compact_audit
+from app.compliance.audit import LEGAFY_DISCLAIMER
 from app.compliance.registry import JURISDICTION_REGISTRY
+from app.localisation import supported_languages, translate_payload
 from app.models.schemas import (
     DocumentGenerationRequest,
+    LegalSourceSearchRequest,
     RegionalComplianceAuditRequest,
+    ReviewQueueRequest,
     TenantContext,
 )
+from app.search.corpus import get_corpus
+from app.search.intent import analyse, build_fts_query
 from app.service import run_audit, run_generation
+from app.sources.store import CITABLE_AUTHORITY_FLOOR, get_store
 
 
 @dataclass(frozen=True)
@@ -49,7 +57,26 @@ class ToolSpec:
 
 async def _audit(payload: dict, *, request_id: str, tenant: TenantContext) -> dict:
     request = RegionalComplianceAuditRequest.model_validate(payload)
-    return (await run_audit(request, request_id=request_id, tenant=tenant)).model_dump(mode="json")
+    result = (await run_audit(request, request_id=request_id, tenant=tenant)).model_dump(mode="json")
+
+    if request.contribute_to_corpus:
+        # Opt-in only, identifiers scrubbed, and there is no tenant argument to pass.
+        analysis = analyse(request.business_concept)
+        get_corpus().record(
+            question=request.business_concept,
+            intent=analysis.intent,
+            tone=analysis.tone,
+            jurisdictions=[s["code"] for s in result.get("states", [])],
+            activity_flags=[f.value for f in request.activity_flags],
+            lane=result.get("traffic_light", {}).get("lane"),
+        )
+
+    if request.detail == "compact":
+        result = compact_audit(result)
+    if request.language:
+        # Explanation layer only — see app/localisation.py for what stays English.
+        result = await translate_payload(result, request.language)
+    return result
 
 
 async def _generate(payload: dict, *, request_id: str, tenant: TenantContext) -> dict:
@@ -62,9 +89,64 @@ async def _generate(payload: dict, *, request_id: str, tenant: TenantContext) ->
 async def _jurisdictions(payload: dict, *, request_id: str, tenant: TenantContext) -> dict:
     return {
         "jurisdictions": JURISDICTION_REGISTRY.all_summaries(),
+        "languages": supported_languages(),
         "isolation_note": (
             "Each state is an isolated code path. Legafy refuses to approximate an "
             "unmapped state with a neighbouring one."
+        ),
+    }
+
+
+async def _search_sources(payload: dict, *, request_id: str, tenant: TenantContext) -> dict:
+    request = LegalSourceSearchRequest.model_validate(payload)
+    store = get_store()
+
+    analysis = analyse(request.query) if request.natural_language else None
+    fts_query = build_fts_query(request.query, analysis) if analysis else request.query
+    # A jurisdiction named in the question is honoured only when the caller did not
+    # pin one explicitly. It stays a hard filter either way.
+    jurisdiction = request.jurisdiction
+    if jurisdiction is None and analysis and len(analysis.jurisdictions) == 1:
+        jurisdiction = analysis.jurisdictions[0]
+
+    hits = store.search(
+        fts_query,
+        jurisdiction=jurisdiction,
+        limit=request.limit,
+        citable_only=not request.include_non_citable,
+    )
+    return {
+        "success": True,
+        "query": request.query,
+        "fts_query": fts_query,
+        "analysis": analysis.as_dict() if analysis else None,
+        "jurisdiction": jurisdiction,
+        "hits": hits,
+        "index": store.stats(),
+        "usage_note": (
+            "These are pointers to primary sources, not assertions about their contents. "
+            f"Only documents at or above authority weight {CITABLE_AUTHORITY_FLOOR} may support "
+            "a compliance statement, and only after a human has read them. Jurisdiction is a "
+            "hard filter: results from another state are never returned at a lower rank."
+        ),
+        "disclaimer": LEGAFY_DISCLAIMER,
+    }
+
+
+async def _review_queue(payload: dict, *, request_id: str, tenant: TenantContext) -> dict:
+    request = ReviewQueueRequest.model_validate(payload or {})
+    store = get_store()
+    return {
+        "success": True,
+        "pending": store.pending_reviews(
+            limit=request.limit, jurisdiction=request.jurisdiction
+        ),
+        "index": store.stats(),
+        "note": (
+            "Detected changes at whitelisted primary sources, ordered by review priority "
+            "(authority x change magnitude x instrument coverage x recency x exposure). "
+            "A queued item is a prompt for a human to read the source. It is not a finding, "
+            "and nothing here has changed any answer the engine gives."
         ),
     }
 
@@ -84,6 +166,19 @@ the traffic-light verdict is RED — that halt is not overridable. Set dry_run=t
 plan without generating text. Writes Markdown and DOCX into the server's generated/ directory and
 returns their paths."""
 
+SEARCH_DESCRIPTION = """Search Legafy's index of INDIAN GOVERNMENT PRIMARY SOURCES (gazette,
+ministry, regulator and state department pages). Use it to find the official page behind an
+obligation, or to check what a state portal currently says.
+
+This returns POINTERS WITH AUTHORITY WEIGHTS, not answers. A hit is a document to read, not a
+statement of law — do not paraphrase a hit as though it were the rule. `jurisdiction` is a hard
+filter, so a Telangana query never surfaces an Andhra Pradesh page. Hits below the citable floor
+are orientation only."""
+
+REVIEW_DESCRIPTION = """List detected changes at watched primary sources, ordered by review
+priority. Operational tool for the compliance team: it says which source page moved and how much,
+so a human knows what to read next. It never changes an answer on its own."""
+
 TOOLS: tuple[ToolSpec, ...] = (
     ToolSpec(
         name="execute_regional_compliance_audit",
@@ -100,6 +195,22 @@ TOOLS: tuple[ToolSpec, ...] = (
         input_model=DocumentGenerationRequest,
         handler=_generate,
         required_scope="generate",
+    ),
+    ToolSpec(
+        name="search_legal_sources",
+        title="Search Primary Legal Sources",
+        description=SEARCH_DESCRIPTION,
+        input_model=LegalSourceSearchRequest,
+        handler=_search_sources,
+        required_scope="audit",
+    ),
+    ToolSpec(
+        name="list_source_review_queue",
+        title="List Source Review Queue",
+        description=REVIEW_DESCRIPTION,
+        input_model=ReviewQueueRequest,
+        handler=_review_queue,
+        required_scope="review",
     ),
     ToolSpec(
         name="list_supported_jurisdictions",

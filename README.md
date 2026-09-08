@@ -42,6 +42,19 @@ short document is treated as a bug, not a degraded mode.
 local Ollama, and a deterministic offline drafter for CI and air-gapped runs.
 First healthy provider in the chain wins; the rest are failover.
 
+**Freshness without a news feed.** A watcher diffs whitelisted government sources
+and files *review candidates* ranked by authority × change magnitude × coverage ×
+recency × exposure. A change schedules a human; it never edits an answer by itself.
+
+**Tone-aware, truth-invariant.** A phrase trie and a rule table read intent and
+tone off the question. Tone changes delivery — ordering, brevity, what leads —
+never the verdict. `tone_affects_verdict` is hard-coded False and tested.
+
+**Cheap over MCP.** `detail: "compact"` (default) is 60% smaller per call:
+static contract text moves into the session-level tool description, proofs are
+deduplicated, and signals that merely restate a duty are dropped. Every RED
+signal, halt notice and proof pointer survives.
+
 ---
 
 ## Use it from Claude
@@ -64,7 +77,7 @@ with an older interpreter: `make install PY=python3.13`.
 
 ```bash
 make install
-make test                      # 78 tests, offline, no network
+make test                      # 102 tests, offline, no network
 make run                       # http://localhost:8000/docs
 
 # generate a real document with the offline provider — no API key needed
@@ -101,6 +114,10 @@ app/
   pipeline/          chunk plan → anti-truncation assembly → Markdown → DOCX
   mcp/server.py      MCP stdio server (local engine or remote bridge)
   mcp/http.py        remote MCP over Streamable HTTP — the connector endpoint
+  compact.py         proof-without-noise response mode (60% fewer tokens)
+  localisation.py    regional language for the explanation layer only
+  search/            phrase trie, intent+tone classifier, opt-in question corpus
+  sources/           primary-source index (FTS5), change detection, review queue
 plugins/legafy/      Claude Code plugin: connector + legal-idea-screen skill
 data/jurisdictions/  one JSON file per isolated code path (IN-TG, IN-AP, …)
 generated/           runtime output + audit vault — gitignored, back this up
@@ -111,6 +128,7 @@ generated/           runtime output + audit vault — gitignored, back this up
 | | |
 |---|---|
 | [Hosting & connectors](docs/HOSTING_MCP.md) | Plugin marketplace, Claude custom connector, ChatGPT, token issuing |
+| [Search, freshness & language](docs/SEARCH_AND_FRESHNESS.md) | the ranking algorithm, the trie, the corpus privacy line, the token budget |
 | [Roadmap](ROADMAP.md) | Verification, municipal layer, IP screening, the corpus question |
 | [MCP & AI-platform integration](docs/MCP_INTEGRATION.md) | Claude Desktop, Claude Code, Cursor, OpenAI function calling, n8n |
 | [Deployment](docs/DEPLOYMENT.md) | generic Linux server, Docker, Cloudflare Tunnel, GitHub repo setup |

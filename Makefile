@@ -2,7 +2,7 @@
 # Legafy AI — developer & operations entrypoints
 # =============================================================================
 
-.PHONY: help install lint fmt test run smoke mcp build up up-host up-full down logs ps tunnel bootstrap clean audit-verify
+.PHONY: help install lint fmt test run smoke mcp build up up-host up-full down logs ps tunnel bootstrap clean audit-verify watch taxonomy
 
 VENV        ?= .venv
 # Interpreter used to CREATE the venv. Override when your default python3 is newer
@@ -68,6 +68,12 @@ bootstrap: ## One-shot host preparation (dirs, .env, secrets, license seed)
 clean: ## Remove caches only — NEVER touches generated/ (that's the audit vault + runtime output; it is bind-mounted and must survive `make clean`)
 	rm -rf .ruff_cache .pytest_cache .coverage htmlcov dist build *.egg-info
 	find . -type d -name '__pycache__' -not -path './generated/*' -exec rm -rf {} +
+
+watch: ## Crawl watched primary sources and refresh the review queue
+	$(PYTHON) -m app.sources.watcher
+
+taxonomy: ## What people actually ask (from the opt-in question corpus)
+	$(PYTHON) -c "import json; from app.search.corpus import get_corpus; print(json.dumps(get_corpus().taxonomy(), indent=2))"
 
 audit-verify: ## Verify the append-only audit vault's hash chain is intact
 	$(PYTHON) -c "from app.security.telemetry import get_audit_vault; result = get_audit_vault().verify_chain(); print(result); raise SystemExit(0 if result else 1)"

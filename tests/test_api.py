@@ -66,9 +66,29 @@ def test_audit_returns_isolated_state_path(client):
     )
     assert resp.status_code == 200
     body = resp.json()
+    # Compact is the default: duties keyed by state, proofs deduped by instrument.
+    assert body["jurisdictions"] == ["IN-TG"]
+    assert set(body["state_duties"]) == {"IN-TG"}
+    state_refs = {d["ref"] for d in body["state_duties"]["IN-TG"]}
+    union_refs = {d["ref"] for d in body["union_duties"]}
+    assert not (state_refs & union_refs), "union instrument leaked into the state block"
+
+
+def test_full_detail_returns_the_segregated_blocks(client):
+    resp = client.post(
+        "/api/v1/audit",
+        headers=DEV,
+        json={
+            "business_concept": "A scheduling tool for dental clinics with staff rostering.",
+            "industry_vertical": "B2B SaaS",
+            "state_location": "Telangana",
+            "activity_flags": ["employs_persons", "has_workplace_in_state"],
+            "detail": "full",
+        },
+    )
+    body = resp.json()
     assert [s["code"] for s in body["states"]] == ["IN-TG"]
     assert body["union"]["code"] == "IN-CENTRAL"
-    # Union instruments must never leak into the state block.
     state_ids = {i["id"] for i in body["states"][0]["instruments"]}
     union_ids = {i["id"] for i in body["union"]["instruments"]}
     assert not (state_ids & union_ids)
@@ -100,9 +120,9 @@ def test_escrow_concept_trips_red_lane(client):
         },
     )
     body = resp.json()
-    assert body["traffic_light"]["lane"] == "RED"
-    assert body["traffic_light"]["automation_permitted"] is False
-    assert body["traffic_light"]["mandatory_counsel_notice"]
+    assert body["lane"] == "RED"
+    assert body["automation_permitted"] is False
+    assert body["halt"]
 
 
 def test_scope_is_enforced_on_generation(client):

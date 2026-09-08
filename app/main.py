@@ -30,7 +30,6 @@ from app.models.schemas import (
     ErrorEnvelope,
     HealthResponse,
     RegionalComplianceAuditRequest,
-    RegionalComplianceAuditResponse,
     TenantContext,
 )
 from app.providers.router import get_router
@@ -44,7 +43,7 @@ from app.security.tenancy import (
     authenticate,
     get_tenant_registry,
 )
-from app.service import run_audit, run_generation
+from app.service import run_generation
 from app.tools import TOOLS_BY_NAME, manifest
 
 logging.basicConfig(
@@ -245,16 +244,20 @@ async def invoke_tool(tool_name: str, payload: dict, request: Request):
 
 
 # --- REST -----------------------------------------------------------------
-@app.post("/api/v1/audit", response_model=RegionalComplianceAuditResponse, tags=["compliance"])
+@app.post("/api/v1/audit", tags=["compliance"])
 async def audit_endpoint(
     payload: RegionalComplianceAuditRequest,
     request: Request,
     auth: tuple[TenantContext, object] = Depends(require("audit")),
-) -> RegionalComplianceAuditResponse:
+) -> dict:
+    # Routed through the tool handler so REST and MCP cannot diverge — including
+    # the optional localisation pass.
     tenant, snapshot = auth
-    response = await run_audit(payload, request_id=request.state.request_id, tenant=tenant)
-    response.rate_limit = snapshot
-    return response
+    result = await TOOLS_BY_NAME["execute_regional_compliance_audit"].handler(
+        payload.model_dump(mode="json"), request_id=request.state.request_id, tenant=tenant
+    )
+    result["rate_limit"] = snapshot.model_dump()
+    return result
 
 
 @app.post(

@@ -1,0 +1,145 @@
+{
+  "_README": "Watched primary sources. Every entry must be an official government host already present in a jurisdiction file's source_whitelist. authority_tier drives both review priority and whether a document may be cited at all (see app/sources/store.py). instrument_ids lists the instruments a source page is expected to cover, so a change there raises the queue priority. Aggregators may be added for orientation only — they are below the citable floor and can never support a compliance claim.",
+  "sources": [
+    {
+      "source_id": "in-egazette",
+      "title": "The Gazette of India",
+      "url": "https://egazette.gov.in",
+      "authority_tier": "gazette",
+      "jurisdiction": "IN-CENTRAL",
+      "instrument_ids": [],
+      "check_interval_hours": 24,
+      "note": "Commencement notifications and amendments land here first. Highest authority; a change here outranks everything."
+    },
+    {
+      "source_id": "in-indiacode",
+      "title": "India Code — bare acts repository",
+      "url": "https://www.indiacode.nic.in",
+      "authority_tier": "statute_repository",
+      "jurisdiction": "IN-CENTRAL",
+      "instrument_ids": ["IN-CO-2013", "IN-LLP-2008", "IN-POSH-2013", "IN-CPA-2019"],
+      "check_interval_hours": 168
+    },
+    {
+      "source_id": "in-meity",
+      "title": "Ministry of Electronics and Information Technology",
+      "url": "https://www.meity.gov.in",
+      "authority_tier": "ministry",
+      "jurisdiction": "IN-CENTRAL",
+      "instrument_ids": ["IN-DPDP-2023", "IN-IT-2000"],
+      "check_interval_hours": 24,
+      "note": "DPDP subordinate rules commence by notification; this is the page that moves."
+    },
+    {
+      "source_id": "in-mca",
+      "title": "Ministry of Corporate Affairs",
+      "url": "https://www.mca.gov.in",
+      "authority_tier": "ministry",
+      "jurisdiction": "IN-CENTRAL",
+      "instrument_ids": ["IN-CO-2013", "IN-LLP-2008"],
+      "check_interval_hours": 72
+    },
+    {
+      "source_id": "in-labour",
+      "title": "Ministry of Labour and Employment",
+      "url": "https://labour.gov.in",
+      "authority_tier": "ministry",
+      "jurisdiction": "IN-CENTRAL",
+      "instrument_ids": ["IN-WAGES-2019", "IN-EPF-1952", "IN-ESI-1948"],
+      "check_interval_hours": 72,
+      "note": "Labour code commencement is still staged; watch for state rule notifications."
+    },
+    {
+      "source_id": "in-rbi",
+      "title": "Reserve Bank of India",
+      "url": "https://www.rbi.org.in",
+      "authority_tier": "regulator",
+      "jurisdiction": "IN-CENTRAL",
+      "instrument_ids": ["IN-FEMA-1999"],
+      "check_interval_hours": 24,
+      "note": "Payment aggregator and escrow directions — the RED lane's primary source."
+    },
+    {
+      "source_id": "tg-labour",
+      "title": "Labour Department, Government of Telangana",
+      "url": "https://labour.telangana.gov.in",
+      "authority_tier": "state_portal",
+      "jurisdiction": "IN-TG",
+      "instrument_ids": ["TG-SE-1988", "TG-LWF-1987", "TG-CLRA-RULES"],
+      "check_interval_hours": 168
+    },
+    {
+      "source_id": "tg-ct",
+      "title": "Commercial Taxes Department, Telangana",
+      "url": "https://tgct.gov.in",
+      "authority_tier": "state_portal",
+      "jurisdiction": "IN-TG",
+      "instrument_ids": ["TG-PT-1987"],
+      "check_interval_hours": 168
+    },
+    {
+      "source_id": "ap-labour",
+      "title": "Labour Department, Government of Andhra Pradesh",
+      "url": "https://labour.ap.gov.in",
+      "authority_tier": "state_portal",
+      "jurisdiction": "IN-AP",
+      "instrument_ids": ["AP-SE-1988", "AP-LWF-1987"],
+      "check_interval_hours": 168
+    },
+    {
+      "source_id": "ap-ct",
+      "title": "Commercial Taxes Department, Andhra Pradesh",
+      "url": "https://apct.gov.in",
+      "authority_tier": "state_portal",
+      "jurisdiction": "IN-AP",
+      "instrument_ids": ["AP-PT-1987"],
+      "check_interval_hours": 168
+    },
+    {
+      "source_id": "mh-labour",
+      "title": "Labour Department, Government of Maharashtra",
+      "url": "https://mahakamgar.maharashtra.gov.in",
+      "authority_tier": "state_portal",
+      "jurisdiction": "IN-MH",
+      "instrument_ids": ["MH-SE-2017", "MH-LWF-1953"],
+      "check_interval_hours": 168
+    },
+    {
+      "source_id": "mh-gst",
+      "title": "Department of Goods and Services Tax, Maharashtra",
+      "url": "https://www.mahagst.gov.in",
+      "authority_tier": "state_portal",
+      "jurisdiction": "IN-MH",
+      "instrument_ids": ["MH-PT-1975"],
+      "check_interval_hours": 168
+    },
+    {
+      "source_id": "ka-labour",
+      "title": "Department of Labour, Government of Karnataka",
+      "url": "https://labour.karnataka.gov.in",
+      "authority_tier": "state_portal",
+      "jurisdiction": "IN-KA",
+      "instrument_ids": ["KA-SCE-1961", "KA-LWF-1965"],
+      "check_interval_hours": 168,
+      "note": "IT/ITES exemption notifications are reissued periodically — the single most change-prone entry in the Karnataka set."
+    },
+    {
+      "source_id": "ka-ct",
+      "title": "Commercial Taxes Department, Karnataka",
+      "url": "https://ctax.kar.nic.in",
+      "authority_tier": "state_portal",
+      "jurisdiction": "IN-KA",
+      "instrument_ids": ["KA-PT-1976"],
+      "check_interval_hours": 168
+    },
+    {
+      "source_id": "dl-labour",
+      "title": "Labour Department, Government of NCT of Delhi",
+      "url": "https://labour.delhi.gov.in",
+      "authority_tier": "state_portal",
+      "jurisdiction": "IN-DL",
+      "instrument_ids": ["DL-SE-1954", "DL-LWF-1975"],
+      "check_interval_hours": 168
+    }
+  ]
+}
