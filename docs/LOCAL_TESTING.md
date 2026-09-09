@@ -11,22 +11,51 @@ Your `python3` is 3.14.6. That used to be a blocker: `pydantic==2.10.4` had no
 `pydantic-core==2.46.3` ships `cp314` arm64 macOS wheels, and every other pin is
 pure Python. So use your system interpreter — no pyenv, no Homebrew Python.
 
+Open **Terminal.app** (`Cmd-Space`, type "Terminal"). You get **zsh**. Then:
+
 ```bash
-cd ~/Desktop/"Legafy Ai"/legafy-ai
+cd "/Users/deepakbanavathu/Desktop/Legafy Ai/legafy-ai"
 python3 --version          # expect 3.14.x
-make install               # creates .venv and installs everything
-make test                  # ruff + the full suite; expect 140+ passed
 ```
 
-If `make install` fails on a wheel, that is the one thing worth reporting — it
+Quote that path — "Legafy Ai" has a space in it, and without quotes zsh splits
+it into two arguments and `cd` fails.
+
+**If you have `make`:**
+
+```bash
+make install               # creates .venv and installs everything
+make test                  # ruff + the full suite; expect 167 passed
+```
+
+**If `make: command not found`** — it is not installed by default on macOS. You
+do not need it; these are the exact commands `make install` runs:
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install --upgrade pip
+.venv/bin/pip install -r requirements-dev.txt
+.venv/bin/pytest -q        # expect 167 passed
+```
+
+To get `make` anyway: `xcode-select --install` (Apple Command Line Tools).
+
+A virtual environment keeps its programs in `.venv/bin/`, which is why every
+command above is prefixed. Run `source .venv/bin/activate` once per terminal and
+you can drop the prefix for the rest of that session.
+
+If the install fails **on a wheel**, that is the one thing worth reporting — it
 means a pin regressed, not that your Python is wrong.
+
+`docs/TESTING_PLAYBOOK.md` has the same steps for Windows PowerShell, Git Bash
+and WSL, plus a table of every `make` target and its plain equivalent.
 
 ---
 
 ## Step 1 — prove the engine works before involving Claude
 
 ```bash
-make smoke
+make smoke            # or, without make:  ./scripts/smoke_test.sh
 ```
 
 This runs an audit and assembles a 20+ page DOCX with the offline provider (no
@@ -37,6 +66,9 @@ Then start the server and leave it running in its own terminal tab:
 
 ```bash
 LEGAFY_LOG_LEVEL=DEBUG make run
+
+# without make:
+LEGAFY_LOG_LEVEL=DEBUG .venv/bin/uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
 In a second tab:
@@ -46,7 +78,7 @@ curl -s localhost:8000/healthz | python3 -m json.tool
 curl -s localhost:8000/tools | python3 -c 'import json,sys; print([t["name"] for t in json.load(sys.stdin)["tools"]])'
 ```
 
-Five tool names means the contract is live.
+Seven tool names means the contract is live.
 
 ---
 
@@ -55,6 +87,10 @@ Five tool names means the contract is live.
 ```bash
 make validate        # static: manifests, schemas, config examples
 make validate-live   # + a real MCP initialize / tools/list / tools/call
+
+# without make:
+.venv/bin/python scripts/validate_integration.py
+.venv/bin/python scripts/validate_integration.py --live
 ```
 
 Run this before touching Claude. It fails on exactly the things that otherwise
@@ -140,7 +176,7 @@ Then:
 
 ```bash
 /plugin list          # legafy should be enabled
-/mcp                  # legafy's five tools should be listed
+/mcp                  # legafy's seven tools should be listed
 ```
 
 The plugin also installs the `legal-idea-screen` skill, so the model knows when
@@ -162,6 +198,8 @@ request with its `x-request-id`, the tenant that authenticated, and the tool.
 ```bash
 tail -3 generated/akrigon_audit_vault.json | python3 -m json.tool
 make audit-verify
+# without make:
+.venv/bin/python -c "from app.security.telemetry import get_audit_vault; print(get_audit_vault().verify_chain())"
 ```
 
 `make audit-verify` recomputes the hash chain end to end. `(True, ...)` means no
@@ -207,7 +245,10 @@ whole verification.
 | Claude Desktop shows nothing | relative path, or app not fully quit | absolute paths, Cmd-Q, reopen |
 | `ModuleNotFoundError: app` | `cwd` not set in the config | set `cwd` to the repo root |
 | Everything comes back RED | no `activity_flags` declared | declare what the product actually does |
-| `make install` fails on a wheel | a pin regressed for 3.14 | report it — do not switch Python |
+| `make: command not found` | not installed by default on macOS | you do not need it — use the plain commands above, or `xcode-select --install` |
+| `pytest: command not found` | calling the system pytest, not the venv's | use `.venv/bin/pytest`, or `source .venv/bin/activate` first |
+| `cd: no such file or directory` | the space in "Legafy Ai" split the path | quote it: `cd "/Users/.../Legafy Ai/legafy-ai"` |
+| install fails on a wheel | a pin regressed for 3.14 | report it — do not switch Python |
 
 ## Resetting between tests
 

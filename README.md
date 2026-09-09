@@ -72,17 +72,33 @@ to use it. For claude.ai, Claude Desktop, ChatGPT and everything else, see
 
 ## Quick start
 
-Python 3.11–3.13. On 3.14 the pinned dependencies have no wheels yet, so build the venv
-with an older interpreter: `make install PY=python3.13`.
+**Python 3.11 through 3.14 all work.** Every pin is pure Python except
+`pydantic-core`, which ships `cp314` wheels.
 
 ```bash
 make install
-make test                      # 102 tests, offline, no network
+make test                      # 167 tests, offline, no network
 make run                       # http://localhost:8000/docs
 
 # generate a real document with the offline provider — no API key needed
 make smoke
 ```
+
+**No `make`?** It is not installed by default on macOS or Windows, and nothing
+here needs it — these are the commands `make` runs:
+
+```bash
+python3 -m venv .venv                              # Windows: python -m venv .venv
+.venv/bin/pip install -r requirements-dev.txt      # Windows: .venv\Scripts\pip install -r requirements-dev.txt
+.venv/bin/pytest -q                                # Windows: .venv\Scripts\pytest -q
+.venv/bin/uvicorn app.main:app --reload            # Windows: .venv\Scripts\uvicorn app.main:app --reload
+```
+
+A venv keeps its programs in `.venv/bin/` on macOS and Linux and in
+`.venv\Scripts\` on Windows — that difference is behind almost every "command
+not found" after installing. [docs/TESTING_PLAYBOOK.md](docs/TESTING_PLAYBOOK.md)
+§0.5–§0.6 covers which terminal to open (zsh, bash, Git Bash, WSL, PowerShell)
+and maps every `make` target to its plain equivalent.
 
 Live example:
 

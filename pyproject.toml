@@ -17,6 +17,12 @@ include = ["app*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# Put the repo root on sys.path. Without this, `.venv/bin/pytest` (and
+# `.venv\Scripts\pytest` on Windows) fails every test module with
+# "ModuleNotFoundError: No module named 'app'" — the console script does not add
+# the working directory the way `python -m pytest` does. `make test` calls the
+# console script, so a fresh clone would fail on the first command a tester runs.
+pythonpath = ["."]
 asyncio_mode = "auto"
 filterwarnings = ["ignore::DeprecationWarning"]
 
