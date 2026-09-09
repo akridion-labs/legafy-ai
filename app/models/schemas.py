@@ -453,6 +453,25 @@ class LegalSourceSearchResponse(BaseModel):
     disclaimer: str
 
 
+class VerifyRegistrationRequest(BaseModel):
+    """Check one of the caller's own registrations against a government API."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    check: str = Field(
+        description="Which check to run, e.g. 'gstin', 'udyam', 'pan', 'cin'. "
+        "Call with an empty identifier to list what is available and enabled."
+    )
+    identifier: str = Field(
+        default="",
+        max_length=64,
+        description=(
+            "The registration number to check. It is sent to the government endpoint "
+            "and is NOT stored by Legafy — not in the audit vault, not in any log line."
+        ),
+    )
+
+
 class SourceHealthRequest(BaseModel):
     """Ask whether the citations Legafy hands out are still sound."""
 

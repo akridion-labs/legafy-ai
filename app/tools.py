@@ -25,11 +25,13 @@ from app.models.schemas import (
     ReviewQueueRequest,
     SourceHealthRequest,
     TenantContext,
+    VerifyRegistrationRequest,
 )
 from app.search.cascade import backlog_report, resolve
 from app.search.corpus import get_corpus
 from app.search.intent import analyse, build_fts_query
 from app.service import run_audit, run_generation
+from app.sources.govapi import available_checks, verify
 from app.sources.store import CITABLE_AUTHORITY_FLOOR, MalformedQuery, get_store
 from app.sources.validation import audit_sources
 
@@ -227,6 +229,26 @@ async def _source_health(payload: dict, *, request_id: str, tenant: TenantContex
     return report
 
 
+async def _verify_registration(payload: dict, *, request_id: str, tenant: TenantContext) -> dict:
+    request = VerifyRegistrationRequest.model_validate(payload or {})
+    if not request.identifier:
+        return {"success": True, "available_checks": available_checks()}
+    result = await verify(request.check, request.identifier)
+    return {"success": True, **result.as_dict()}
+
+
+VERIFY_DESCRIPTION = """Check one of the USER'S OWN registrations against a government API
+(GSTIN, Udyam, PAN, CIN). Call with an empty identifier to list which checks are available and
+whether a key is configured.
+
+READ THE RESULT CORRECTLY. This says whether a registration exists and is live. It says NOTHING
+about whether anyone is compliant, and it never changes a traffic-light verdict — "the GSTIN is
+active" is a fact about a number, not a legal conclusion. `verified: null` means the check could
+not be run (no key, outage, bad format); it is NOT evidence that the registration is absent.
+
+The identifier is sent to the government endpoint and is not stored by Legafy."""
+
+
 SOURCE_HEALTH_DESCRIPTION = """Check whether the official-source citations Legafy hands out are
 still sound: every URL on a government host, on the whitelist that authorises it, on https, not
 sitting on a host that has migrated elsewhere.
@@ -316,6 +338,14 @@ TOOLS: tuple[ToolSpec, ...] = (
         input_model=ReviewQueueRequest,
         handler=_review_queue,
         required_scope="review",
+    ),
+    ToolSpec(
+        name="verify_registration",
+        title="Verify a Registration",
+        description=VERIFY_DESCRIPTION,
+        input_model=VerifyRegistrationRequest,
+        handler=_verify_registration,
+        required_scope="audit",
     ),
     ToolSpec(
         name="verify_source_health",

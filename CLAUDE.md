@@ -15,6 +15,7 @@ app/
                        obligations.py = duty -> how to close -> exposure, + IP screen
                        research.py    = the register searches a founder must run
   sources/validation.py  citation health: https, official host, whitelisted, not migrated
+  sources/govapi.py    government verification APIs — the CALLER'S facts, never the law
   search/cascade.py    local-first retrieval: L0 matrix, L1 index, L3 recorded miss
   providers/           model-agnostic router: anthropic | openai | ollama | offline
   pipeline/            anti-truncation chunk assembly → Markdown → DOCX
@@ -65,6 +66,10 @@ make up / down    # docker compose stack (api + cloudflared [+ redis])
     official page. A citation must be https, on a government host, on the
     whitelist that authorises it, and not on a migrated host. `make sources-check`
     in CI; `verify_source_health` for the agent.
+
+11. **A verification is not a legal conclusion.** A government API can say a
+    registration is live. It can never say anyone is compliant, never enters the
+    grounding matrix, and never moves a lane.
 
 See `docs/LEGAL_DATA_SOURCES.md` for the source hierarchy and what
 machine-readable legal data actually exists in India,

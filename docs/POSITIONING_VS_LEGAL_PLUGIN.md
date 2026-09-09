@@ -126,7 +126,30 @@ Reading a competitor honestly means naming what they do better.
 
 ---
 
-## 5. The one-sentence version
+## 5. What we shipped after reading it
+
+Not a list of intentions — these are in the repository:
+
+- **`integrations/legal.local.india.md`** — a maintained India playbook
+  fragment for that plugin's own extension point. Positions and escalation
+  triggers, no section numbers, with a standing instruction that a live Legafy
+  audit outranks the file. This is item 1 of §3, done.
+- **Lane mapping in our skill file**, so a model holding both plugins routes
+  RED → full legal review, AMBER → counsel review, GREEN → standard approval,
+  instead of the two tools contradicting each other in front of a founder.
+- **`verify_registration`** — the counterparty check their `/vendor-check`
+  cannot do without a legal data source: GSTIN, Udyam, PAN and CIN against
+  government APIs, with the result scoped in the payload itself so "the GSTIN is
+  active" cannot be read as "this vendor is compliant".
+- **Graceful degradation made explicit**, the way theirs is: no API key means
+  the tool says NOT_CONFIGURED and hands back the manual search; a retrieval
+  miss is `L3_MISS` and returned as unanswered. Both are stated in the skill
+  file rather than left as behaviour someone discovers.
+
+Still deliberately not built: contract review, redlining, signature routing.
+They do those well and rebuilding them wins nothing.
+
+## 6. The one-sentence version
 
 Anthropic's plugin makes a legal team faster at the work it already knows how to
 do. Legafy tells a founder who has no legal team what the work *is* — grounded

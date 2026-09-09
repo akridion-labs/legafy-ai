@@ -100,6 +100,17 @@ redirects.
 A clean report means the pointers are sound. It does **not** mean the law behind
 them is current — that is `list_source_review_queue`, and it ends at a human.
 
+## Checking a counterparty
+
+`verify_registration` checks one of the USER'S OWN registrations — a GSTIN,
+Udyam, PAN or CIN — against a government API. Read the answer narrowly: it says
+a registration exists and is live, and nothing about whether anyone is
+compliant. `verified: null` means the check could not run (no key configured,
+an outage, a bad format); it is never evidence that a registration is absent.
+
+If no key is configured the tool says so and hands back the manual search. Say
+that plainly rather than implying a check happened.
+
 ## If Anthropic's `legal` plugin is also installed
 
 They answer different questions and should not talk over each other. Legafy is
@@ -118,6 +129,10 @@ Lane vocabulary maps cleanly, so use theirs when handing over:
 | RED (`automation_permitted: false`) | full legal review |
 | AMBER | counsel review |
 | GREEN + `automation_permitted: true` | standard approval |
+
+For India, `integrations/legal.local.india.md` in the Legafy repository is a
+maintained playbook fragment for that plugin's `legal.local.md`. Point the user
+at it rather than letting them run on Delaware defaults.
 
 Never let the plugin's US-default playbook positions (Delaware, New York,
 California) stand as answers about Indian law. Where the two conflict on an

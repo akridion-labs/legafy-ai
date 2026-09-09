@@ -1,0 +1,64 @@
+{
+  "_README": "Verification checks Legafy can run against government APIs (API Setu and equivalents). Paths and response field names are DATA because they differ by publisher and change without notice — correct them here, never in code. Every entry answers a question about the CALLER'S OWN registration. None of them says anything about what the law requires; see app/sources/govapi.py for why that line is enforced rather than trusted. `path` is appended to LEGAFY_GOV_API_BASE_URL with {id} substituted. Verify each path against your own API Setu dashboard before enabling it: the placeholders below reflect the shape of these APIs, and the exact path depends on which publisher's API your organisation is subscribed to.",
+  "_verification_status": "PATHS_UNVERIFIED — enable a check only after confirming its path and response shape against your own API Setu subscription. A wrong path fails closed (status UNAVAILABLE), which is safe but useless.",
+  "checks": {
+    "gstin": {
+      "authority": "Goods and Services Tax Network",
+      "identifier": "gstin",
+      "proves": "That the GSTIN is live, and the legal name and state it is registered under.",
+      "path": "/gstn/v1/taxpayers/{id}",
+      "fields": {
+        "legal_name": "lgnm",
+        "trade_name": "tradeNam",
+        "status": "sts",
+        "registration_date": "rgdt",
+        "state_jurisdiction": "stj",
+        "constitution": "ctb"
+      },
+      "verified_when": { "path": "sts", "equals": "Active" },
+      "manual_fallback": "Search the GSTIN at https://www.gst.gov.in (Search Taxpayer).",
+      "why_it_matters": "Input credit is denied on invoices from a cancelled or fake registration, and the demand lands on you, not on the supplier."
+    },
+    "udyam": {
+      "authority": "Ministry of Micro, Small and Medium Enterprises",
+      "identifier": "udyam",
+      "proves": "That the supplier is a registered micro or small enterprise.",
+      "path": "/msme/v1/udyam/{id}",
+      "fields": {
+        "enterprise_name": "enterpriseName",
+        "enterprise_type": "enterpriseType",
+        "registration_date": "dateOfRegistration",
+        "state": "state"
+      },
+      "verified_when": { "path": "status", "equals": "Valid" },
+      "manual_fallback": "Search at https://udyamregistration.gov.in.",
+      "why_it_matters": "A registered micro or small supplier starts a statutory payment clock that cannot be contracted out of; overdue amounts attract compounded interest and the expense can be disallowed for tax."
+    },
+    "pan": {
+      "authority": "Income Tax Department",
+      "identifier": "pan",
+      "proves": "That the PAN exists and is in an active state.",
+      "path": "/pan/v1/{id}",
+      "fields": { "status": "status", "name_match": "nameMatch" },
+      "verified_when": { "path": "status", "equals": "Valid" },
+      "manual_fallback": "Verify through the Income Tax e-filing portal.",
+      "why_it_matters": "Withholding at source on a payment to an unverified or inoperative PAN attracts a higher rate, recovered from the payer."
+    },
+    "cin": {
+      "authority": "Ministry of Corporate Affairs",
+      "identifier": "cin",
+      "proves": "That the company exists on the register, and its current status.",
+      "path": "/mca/v1/companies/{id}",
+      "fields": {
+        "company_name": "companyName",
+        "status": "companyStatus",
+        "incorporation_date": "dateOfIncorporation",
+        "registered_office_state": "registeredOfficeState",
+        "class": "companyClass"
+      },
+      "verified_when": { "path": "companyStatus", "equals": "Active" },
+      "manual_fallback": "Search company master data at https://www.mca.gov.in.",
+      "why_it_matters": "Signing with a struck-off or dormant company means signing with something that cannot perform, and the signature block will not survive diligence."
+    }
+  }
+}

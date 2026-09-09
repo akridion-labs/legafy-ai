@@ -56,11 +56,27 @@ exactly the evidence our invariant demands. **Add it as a `statute_repository`
 tier source, not a `gazette` one.**
 
 **API Setu** — `apisetu.gov.in`, the Government of India's official API
-gateway. Real and official, but it is largely an identity and
-document-verification exchange (DigiLocker-style: verify a PAN, fetch a
-certificate) with onboarding requirements. It is not a statute or compliance
-corpus. Useful later if Legafy ever verifies a user's own registrations; it does
-not help us know the law.
+gateway. Real and official, and its published categories are KYC verification,
+education, banking/insurance and employment — a DigiLocker-backed *verification
+exchange*, not a statute or compliance corpus. It answers "is this PAN real",
+never "what does the law require".
+
+*Our position:* wired, deliberately and narrowly. `app/sources/govapi.py` and
+the `verify_registration` tool check the caller's own registrations — GSTIN,
+Udyam, PAN, CIN — and the scope limit is enforced in code, not trusted: a
+verification never enters the grounding matrix, never becomes a `SourceDoc`,
+and can never move a traffic-light lane (there is a test asserting that nothing
+in `app/compliance/` imports it). It turns the lookup half of the research
+checklist from "go and search this" into "checked at 14:32, here is the answer
+and the endpoint that gave it". `verified: null` means *could not check* and is
+never read as *not registered*. Identifiers are call-through only — a GSTIN is
+exactly what our corpus scrubs, so it is never written to a store, a log line
+or the audit vault.
+
+Endpoint paths live in `data/gov_api_endpoints.json`, not code, because API
+Setu publishers differ in path and field names. They ship marked
+`PATHS_UNVERIFIED`: confirm each against your own subscription before enabling
+it. A wrong path fails closed (`UNAVAILABLE`), which is safe and useless.
 
 **eCourts data** — the government's own eCourts services are a web portal, not a
 documented public API. What exists as an "eCourts API" is **third-party**

@@ -85,6 +85,16 @@ class Settings(BaseSettings):
     chunk_concurrency: int = Field(default=1, alias="LEGAFY_CHUNK_CONCURRENCY")
     min_document_words: int = Field(default=10000, alias="LEGAFY_MIN_DOCUMENT_WORDS")
 
+    # --- Government verification APIs (API Setu and equivalents) ------------
+    # These verify the CALLER'S OWN registrations. They are never a source of
+    # law — see app/sources/govapi.py. Unset by default: with no key, checks
+    # return NOT_CONFIGURED and the research checklist stays manual.
+    gov_api_base_url: str = Field(
+        default="https://apisetu.gov.in/api", alias="LEGAFY_GOV_API_BASE_URL"
+    )
+    gov_api_key: str = Field(default="", alias="LEGAFY_GOV_API_KEY")
+    gov_api_client_id: str = Field(default="", alias="LEGAFY_GOV_API_CLIENT_ID")
+
     # --- Cloudflare ---------------------------------------------------------
     cloudflare_hostname: str = Field(
         default="legal-mcp.akridion.com", alias="CLOUDFLARE_HOSTNAME"

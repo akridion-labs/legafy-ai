@@ -526,3 +526,101 @@ def test_source_health_tool_is_exposed_and_defaults_to_offline():
 
     assert "verify_source_health" in TOOLS_BY_NAME
     assert SourceHealthRequest().check_live is False
+
+
+# --- Government verification APIs: a fact about a number, not a legal conclusion
+def test_registration_check_is_disabled_without_a_key():
+    """No key must mean 'not checked', never a silent pass or a silent fail."""
+    import asyncio
+
+    from app.config import get_settings, reset_settings_cache
+    from app.sources.govapi import verify
+
+    reset_settings_cache()
+    assert not get_settings().gov_api_key
+    result = asyncio.run(verify("gstin", "29AAACR5055K1ZK"))
+    assert result.status == "NOT_CONFIGURED"
+    assert result.verified is None
+    assert "meanwhile" in result.detail  # the manual fallback is still offered
+
+
+def test_unavailable_is_not_the_same_as_unregistered():
+    """Collapsing 'could not check' into 'not registered' is a confident false
+    negative about someone's business. verified stays None."""
+    import asyncio
+
+    import httpx
+
+    from app.config import Settings
+    from app.sources import govapi
+
+    def boom(request):
+        raise httpx.ConnectError("portal down")
+
+    original = govapi.get_settings
+    govapi.get_settings = lambda: Settings(LEGAFY_GOV_API_KEY="test-key")
+    try:
+        client = httpx.AsyncClient(transport=httpx.MockTransport(boom))
+        result = asyncio.run(govapi.verify("gstin", "29AAACR5055K1ZK", client=client))
+        assert result.status == "UNAVAILABLE"
+        assert result.verified is None
+        assert "NOT evidence" in result.detail["meaning"]
+    finally:
+        govapi.get_settings = original
+
+
+def test_malformed_identifier_never_leaves_the_process():
+    import asyncio
+
+    from app.config import Settings
+    from app.sources import govapi
+
+    called = False
+
+    def spy(request):
+        nonlocal called
+        called = True
+        return httpx.Response(200, json={})
+
+    import httpx
+
+    original = govapi.get_settings
+    govapi.get_settings = lambda: Settings(LEGAFY_GOV_API_KEY="test-key")
+    try:
+        client = httpx.AsyncClient(transport=httpx.MockTransport(spy))
+        result = asyncio.run(govapi.verify("gstin", "not-a-gstin", client=client))
+        assert result.status == "BAD_FORMAT"
+        assert called is False, "a typo must not spend a government API call"
+    finally:
+        govapi.get_settings = original
+
+
+def test_verification_result_carries_its_own_scope_limit():
+    """The result must say what it is not, because the tempting misreading —
+    'the government API says I am compliant' — is legal advice from a lookup."""
+    from app.sources.govapi import VerificationResult
+
+    payload = VerificationResult("gstin", True, "now", "/x", "GSTN").as_dict()
+    note = payload["scope_note"]
+    assert "not a statement about what the law requires" in note
+    assert "does not change any traffic-light verdict" in note
+
+
+def test_verification_never_enters_the_grounding_matrix():
+    """Structural, not procedural: nothing in the compliance package imports the
+    government-API client, so a verification cannot become a source of law."""
+    import pathlib
+
+    compliance = pathlib.Path("app/compliance")
+    for path in compliance.glob("*.py"):
+        assert "govapi" not in path.read_text(), path
+
+
+def test_endpoint_paths_are_data_not_code():
+    from app.sources.govapi import endpoint_map
+
+    checks = endpoint_map()
+    assert {"gstin", "udyam", "pan", "cin"} <= set(checks)
+    for name, spec in checks.items():
+        assert spec["path"].count("{id}") == 1, name
+        assert spec.get("manual_fallback"), f"{name} must degrade to a manual search"
