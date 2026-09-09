@@ -280,6 +280,12 @@ The response carries three blocks you should present together:
 * `ip_risks` / `ip_baseline` — copyright, trade-mark, patent and trade-secret questions inferred
   from the wording of the idea, each with the phrase that triggered it. These are prompts for
   diligence, not determinations, and they never change the lane.
+* `judicial` — the COURT TIER: what is actually litigated about these instruments, ordered
+  unsettled-first. `settled` is EVOLVING (today's answer may not be next year's), CONTESTED
+  (courts have gone different ways — budget for the argument) or WELL_SETTLED (the principle is
+  stable; the fight is about your facts). `turns_on` lists the factors a court weighs. NO CASE
+  NAMES OR CITATIONS ARE RETURNED and you must not supply any from memory — if the user needs
+  authorities, tell them a lawyer must read the judgments at the linked court site.
 * `proofs` — the official page behind each instrument, referenced by `ref` from each obligation."""
 
 GENERATE_DESCRIPTION = """Assemble a long-form pre-counsel document (20+ pages) for one Indian state

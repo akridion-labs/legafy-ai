@@ -624,3 +624,74 @@ def test_endpoint_paths_are_data_not_code():
     for name, spec in checks.items():
         assert spec["path"].count("{id}") == 1, name
         assert spec.get("manual_fallback"), f"{name} must degrade to a manual search"
+
+
+# --- The court tier: doctrine without invented authority ---------------------
+def test_no_case_name_or_citation_is_ever_invented():
+    """The same rule that keeps penalty amounts out keeps case citations out.
+
+    A fabricated case name is the most damaging thing a legal tool can produce:
+    it is checkable, it is wrong, and it has ended careers in other
+    jurisdictions. So the court tier states doctrine at the level it is settled
+    at and carries no authority until a reviewer has read the judgment.
+    """
+    import re
+
+    blob = (pathlib_read := __import__("pathlib").Path("data/judicial_questions.json")).read_text()
+    assert pathlib_read.exists()
+    # "X v. Y" / "X vs Y" case-name shapes
+    assert not re.search(r"\b[A-Z][A-Za-z.]+\s+v\.?s?\.?\s+[A-Z][A-Za-z.]+", blob)
+    # Indian law-report citation shapes
+    assert not re.search(r"\b(AIR|SCC|SCR|SCALE|Bom|Del|Kar|Mad|Cal)\s*\(?\d", blob)
+    assert not re.search(r"\(\d{4}\)\s*\d+\s*[A-Z]{2,5}", blob)
+    # And no section numbers, same as everywhere else
+    assert not re.search(r"\bsection\s+\d", blob, re.IGNORECASE)
+
+
+def test_every_judicial_entry_is_marked_unverified_with_an_empty_authority_list():
+    from app.compliance.obligations import _judicial
+
+    for instrument_id, entries in _judicial().items():
+        for entry in entries:
+            assert entry["case_law_status"] == "NOT_VERIFIED", instrument_id
+            assert entry["authorities"] == [], instrument_id
+            assert entry["settled"] in {"WELL_SETTLED", "CONTESTED", "EVOLVING"}
+            assert entry["turns_on"] and entry["why_it_matters"] and entry["founder_action"]
+            assert entry["where_to_look"].startswith("https://")
+
+
+def test_judicial_questions_lead_with_the_unsettled_law():
+    """Where a founder's assumption is most likely to be wrong comes first."""
+    from app.compliance.obligations import judicial_questions
+
+    out = judicial_questions(["IN-CONTRACT-1872", "IN-DPDP-2023", "IN-WAGES-2019"])
+    order = [q["settled"] for q in out]
+    rank = {"EVOLVING": 0, "CONTESTED": 1, "WELL_SETTLED": 2}
+    assert order == sorted(order, key=lambda s: rank[s])
+    assert order[0] == "EVOLVING"
+
+
+def test_court_tier_is_below_the_gazette_and_at_the_citable_floor():
+    from app.sources.store import AUTHORITY_WEIGHT, CITABLE_AUTHORITY_FLOOR
+
+    assert AUTHORITY_WEIGHT["court"] == CITABLE_AUTHORITY_FLOOR
+    assert AUTHORITY_WEIGHT["court"] < AUTHORITY_WEIGHT["gazette"]
+    # A third-party reseller of court data is an aggregator, never a court.
+    assert AUTHORITY_WEIGHT["aggregator"] < CITABLE_AUTHORITY_FLOOR
+
+
+def test_court_sources_are_watched_and_officially_hosted():
+    import json
+    import pathlib
+
+    from app.sources.validation import host_of, is_official_host
+
+    sources = json.loads(pathlib.Path("data/sources.json").read_text())["sources"]
+    courts = [s for s in sources if s["authority_tier"] == "court"]
+    assert len(courts) >= 5, "supreme court, the judgment portal, and our states' high courts"
+    for source in courts:
+        assert is_official_host(host_of(source["url"])), source["url"]
+    # Every state we serve has its own high court watched — a state's own court
+    # is the one that interprets that state's rules.
+    watched = {s["jurisdiction"] for s in courts}
+    assert {"IN-TG", "IN-AP", "IN-MH", "IN-KA", "IN-DL"} <= watched

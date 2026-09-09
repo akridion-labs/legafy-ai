@@ -41,9 +41,15 @@ answer them.
 
 from __future__ import annotations
 
+import json
 import re
 from dataclasses import dataclass
+from functools import lru_cache
 from typing import Any
+
+from app.config import REPO_ROOT
+
+JUDICIAL_FILE = REPO_ROOT / "data" / "judicial_questions.json"
 
 QUANTUM_NOTE = (
     "Consequences below are categorical, not quantified. Legafy does not state "
@@ -250,6 +256,40 @@ DOMAIN_PLAYBOOK: dict[str, Playbook] = {
 }
 
 
+@lru_cache(maxsize=1)
+def _judicial() -> dict[str, list[dict[str, Any]]]:
+    if not JUDICIAL_FILE.exists():
+        return {}
+    return json.loads(JUDICIAL_FILE.read_text(encoding="utf-8")).get("questions", {})
+
+
+def judicial_questions(instrument_ids: list[str]) -> list[dict[str, Any]]:
+    """The court tier: what is actually litigated about these instruments.
+
+    A bare provision does not answer a real question. "Is my delivery rider an
+    employee" is not decided by the Code on Wages, it is decided by the cases
+    about control and integration. Without this the engine can describe a duty
+    and say nothing about what it means when someone disputes it — which is the
+    only moment that matters.
+
+    No case names appear here, by the same rule that keeps penalties out: an
+    authority is added only when a reviewer has read the judgment on the court's
+    own site. What is stated is the doctrine at the level of generality it is
+    safely settled at, plus how settled that is, so a founder knows whether they
+    are on firm ground or budgeting for an argument.
+    """
+    table = _judicial()
+    out: list[dict[str, Any]] = []
+    for instrument_id in instrument_ids:
+        for entry in table.get(instrument_id, []):
+            out.append({**entry, "instrument_ref": instrument_id})
+    # Unsettled law first: that is where a founder's assumption is most likely
+    # to be wrong, and where counsel is most worth paying for.
+    rank = {"EVOLVING": 0, "CONTESTED": 1, "WELL_SETTLED": 2}
+    out.sort(key=lambda q: rank.get(q.get("settled", "CONTESTED"), 1))
+    return out
+
+
 def build_obligation_ledger(grounding: dict[str, Any]) -> dict[str, Any]:
     """Turn the grounding bundle into duty / remediation / exposure triples.
 
@@ -292,8 +332,19 @@ def build_obligation_ledger(grounding: dict[str, Any]) -> dict[str, Any]:
     order = {"RED": 0, "AMBER": 1, "GREEN": 2}
     obligations.sort(key=lambda o: (order.get(o["lane"], 1), o["jurisdiction"], o["key"]))
 
+    instrument_ids = sorted({o["ref"] for o in obligations})
+    judicial = judicial_questions(instrument_ids)
+
     return {
         "count": len(obligations),
+        "judicial_questions": judicial,
+        "judicial_note": (
+            "What courts actually decide about these instruments, and how settled it is. "
+            "No case citations appear until a reviewer has read the judgment on the court's "
+            "own site — the same rule that keeps penalty amounts out. EVOLVING means today's "
+            "answer may not be next year's; a confident precedent quoted on a statute this "
+            "new is being quoted from somewhere else."
+        ) if judicial else "",
         "by_lane": {
             lane: sum(1 for o in obligations if o["lane"] == lane)
             for lane in ("RED", "AMBER", "GREEN")

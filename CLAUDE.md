@@ -67,7 +67,11 @@ make up / down    # docker compose stack (api + cloudflared [+ redis])
     whitelist that authorises it, and not on a migrated host. `make sources-check`
     in CI; `verify_source_health` for the agent.
 
-11. **A verification is not a legal conclusion.** A government API can say a
+11. **The court tier states doctrine, never authority.** `data/judicial_questions.json`
+    carries what courts decide and how settled it is. No case name, no law-report
+    citation, `authorities: []` until a reviewer has read the judgment on the
+    court's own site. A fabricated citation is the worst thing this tool could emit.
+12. **A verification is not a legal conclusion.** A government API can say a
     registration is live. It can never say anyone is compliant, never enters the
     grounding matrix, and never moves a lane.
 

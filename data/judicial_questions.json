@@ -1,0 +1,207 @@
+{
+  "_README": "The court tier. For each instrument, the questions courts actually decide about it — what the dispute is, what it turns on, and how settled it is. NO CASE NAMES OR CITATIONS APPEAR HERE. Same rule as penalties: an authority is added only when a reviewer has read the judgment on the court's own site and recorded it in `authorities` with `case_law_status: VERIFIED`. Until then the doctrine is stated at the level of generality it is safely settled at, and the founder is told to have a lawyer read the cases.",
+  "_why_this_exists": "A bare provision does not answer a real question. 'Is my delivery rider an employee' is not decided by the Code on Wages; it is decided by the cases about control, integration and the reality behind the contract. Without this tier Legafy could describe duties but never say what they mean when contested — which is exactly the moment a founder needs to know.",
+  "_settled_scale": {
+    "WELL_SETTLED": "The principle is stable and a lawyer would not expect to argue it. The fight is about applying it to your facts.",
+    "CONTESTED": "Courts have gone different ways, or the tests are applied inconsistently. Budget for the argument.",
+    "EVOLVING": "The law is actively moving, or the statute is too new to have a body of case law. Today's answer may not be next year's."
+  },
+  "questions": {
+    "IN-WAGES-2019": [
+      {
+        "id": "jq.employment.classification",
+        "question": "Is this person an employee or an independent contractor?",
+        "settled": "CONTESTED",
+        "turns_on": [
+          "Control: who decides how, when and in what order the work is done — not merely what the output is.",
+          "Integration: whether the person is part of the business or supplies services to it.",
+          "Economic reality: exclusivity, who supplies the tools, who bears the risk of loss.",
+          "What the parties actually did, which outranks what the contract called them."
+        ],
+        "why_it_matters": "Reclassification is retrospective. A cohort of 'contractors' found to be employees converts a cost line into backdated social-security contributions, interest and damages, and the officer in default is personally in scope.",
+        "founder_action": "Do not rely on the word 'consultant' in the agreement. If you direct the work like an employer, expect to be treated as one.",
+        "authorities": [],
+        "case_law_status": "NOT_VERIFIED",
+        "where_to_look": "https://judgments.ecourts.gov.in"
+      }
+    ],
+    "IN-CONTRACT-1872": [
+      {
+        "id": "jq.contract.restraint",
+        "question": "Is a post-employment non-compete enforceable in India?",
+        "settled": "WELL_SETTLED",
+        "turns_on": [
+          "An agreement restraining a person from exercising a lawful profession, trade or business is void to that extent.",
+          "Restraints operating DURING employment (exclusivity, garden leave) are treated differently from restraints operating after it ends.",
+          "Confidentiality and trade-secret obligations survive; they restrain use of information, not the right to work.",
+          "Non-solicitation of employees or customers is judged more narrowly than a general non-compete and is not automatically safe."
+        ],
+        "why_it_matters": "A restraint that is void does not merely fail — it leaves the departing person entirely free while the company believed it was protected, and the discovery usually comes after they have gone.",
+        "founder_action": "Protect with assignment, confidentiality, notice periods and garden leave. Never price a deal or a founder exit on a non-compete holding.",
+        "authorities": [],
+        "case_law_status": "NOT_VERIFIED",
+        "where_to_look": "https://judgments.ecourts.gov.in"
+      }
+    ],
+    "IN-STAMP-1899": [
+      {
+        "id": "jq.stamp.unstamped_arbitration",
+        "question": "Can an arbitration clause inside an unstamped or insufficiently stamped agreement be acted on before the duty is paid?",
+        "settled": "EVOLVING",
+        "turns_on": [
+          "Whether inadmissibility for want of stamp duty is curable, and at what stage of the proceedings it must be cured.",
+          "Which forum decides the stamping objection — the court appointing the tribunal, or the tribunal itself.",
+          "Whether the defect goes to the existence of the agreement or only to its admissibility in evidence."
+        ],
+        "why_it_matters": "This has genuinely swung in India within recent memory. An unstamped contract can cost you the ability to start the dispute at all, or a preliminary fight before the real one, depending on where the law stands the day you file.",
+        "founder_action": "Stamp at execution and stop relying on where the case law currently sits. The duty is small; the argument is not.",
+        "authorities": [],
+        "case_law_status": "NOT_VERIFIED",
+        "where_to_look": "https://www.sci.gov.in"
+      }
+    ],
+    "IN-IT-2000": [
+      {
+        "id": "jq.intermediary.safe_harbour",
+        "question": "When does a platform lose intermediary protection for what its users post?",
+        "settled": "EVOLVING",
+        "turns_on": [
+          "Whether the platform observed the prescribed due diligence, including a working grievance mechanism.",
+          "Actual knowledge, and what counts as it — a court order, a government notification, or a private complaint.",
+          "How quickly the material was removed once knowledge arose.",
+          "Whether the platform selected, modified or curated the content rather than merely hosting it."
+        ],
+        "why_it_matters": "Safe harbour is conditional on conduct, not on a clause in your terms. Lose it and the platform answers for what its users posted, as a publisher would.",
+        "founder_action": "Operate the takedown route and record response times. A grievance officer who exists only on the contact page is evidence against you, not for you.",
+        "authorities": [],
+        "case_law_status": "NOT_VERIFIED",
+        "where_to_look": "https://judgments.ecourts.gov.in"
+      }
+    ],
+    "IN-DPDP-2023": [
+      {
+        "id": "jq.data.no_body_yet",
+        "question": "How will the data-protection obligations be interpreted in practice?",
+        "settled": "EVOLVING",
+        "turns_on": [
+          "Constitutional privacy jurisprudence, which is settled and predates this statute, supplies the backdrop.",
+          "The subordinate rules, several of which commence by notification and are the operative detail.",
+          "Regulatory practice, which will arrive before a body of judgments does."
+        ],
+        "why_it_matters": "There is no meaningful case law on this statute yet. Anyone quoting confident precedent on it is quoting something else. Planning must be based on the text and the rules, and revisited.",
+        "founder_action": "Build to the text, keep the consent notices you actually showed, and expect the interpretation to tighten rather than loosen.",
+        "authorities": [],
+        "case_law_status": "NOT_VERIFIED",
+        "where_to_look": "https://www.meity.gov.in"
+      }
+    ],
+    "IN-COPY-1957": [
+      {
+        "id": "jq.copyright.ownership_and_expression",
+        "question": "Who owns work made by a contractor, and how much similarity is infringement?",
+        "settled": "WELL_SETTLED",
+        "turns_on": [
+          "Copyright vests first in the author. A commissioning payment is not an assignment; an assignment must be in writing.",
+          "Employment can vest ownership in the employer, but the contractor relationship generally does not.",
+          "Ideas, methods and functionality are not protected; the specific expression is.",
+          "Substantial similarity is judged on what was taken qualitatively, not on the percentage copied."
+        ],
+        "why_it_matters": "Without a written assignment the company does not own its own product, and the contractor remains free to license the same work again. This is the most common diligence failure there is.",
+        "founder_action": "Written, present-tense assignment before the work is merged — including work done before the company existed.",
+        "authorities": [],
+        "case_law_status": "NOT_VERIFIED",
+        "where_to_look": "https://judgments.ecourts.gov.in"
+      }
+    ],
+    "IN-TM-1999": [
+      {
+        "id": "jq.trademark.prior_use",
+        "question": "Does registration beat an earlier unregistered user of the same name?",
+        "settled": "WELL_SETTLED",
+        "turns_on": [
+          "Prior use in the course of trade, which passing off protects independently of the register.",
+          "Deceptive similarity judged from the perspective of an average consumer with imperfect recollection.",
+          "Whether the goods or services are in the same or allied trade channels.",
+          "Honest concurrent use, and delay or acquiescence by the earlier user."
+        ],
+        "why_it_matters": "A clean register search is not a clean bill of health. An unregistered prior user with real trade can force a rebrand after your name is on contracts, invoices and store listings.",
+        "founder_action": "Search the register AND the market. Clear before you print, not after.",
+        "authorities": [],
+        "case_law_status": "NOT_VERIFIED",
+        "where_to_look": "https://judgments.ecourts.gov.in"
+      }
+    ],
+    "IN-PAT-1970": [
+      {
+        "id": "jq.patent.software",
+        "question": "Is a software or business-method invention patentable in India?",
+        "settled": "CONTESTED",
+        "turns_on": [
+          "The exclusion of a computer programme 'per se', and what the qualifier does and does not carve out.",
+          "Whether the claimed invention produces a technical effect or a technical advance beyond the program itself.",
+          "Whether the contribution lies in hardware, or wholly in the algorithm.",
+          "Business methods, which are excluded on their own footing."
+        ],
+        "why_it_matters": "Founders routinely assume a US-style software patent strategy transfers. It does not transfer cleanly, and public disclosure before filing can defeat the application regardless.",
+        "founder_action": "Ask a patent practitioner before you disclose, not after. Treat the answer as jurisdiction-specific.",
+        "authorities": [],
+        "case_law_status": "NOT_VERIFIED",
+        "where_to_look": "https://ipindia.gov.in"
+      }
+    ],
+    "IN-CO-2013": [
+      {
+        "id": "jq.company.veil",
+        "question": "When are directors or promoters personally liable for the company's acts?",
+        "settled": "CONTESTED",
+        "turns_on": [
+          "Separate legal personality as the starting point, displaced only in defined situations.",
+          "Fraud, or the company being used as a facade for the controller's own conduct.",
+          "Statutes that impose liability directly on the 'officer in default', which operate without piercing anything.",
+          "Personal guarantees given by founders, which bypass the question entirely."
+        ],
+        "why_it_matters": "Founders assume incorporation is a wall. Much startup exposure — tax deducted and not deposited, statutory contributions, cheque dishonour — attaches to the officer in default by statute, not by piercing.",
+        "founder_action": "Know which of your obligations name an officer personally, and do not sign personal guarantees casually.",
+        "authorities": [],
+        "case_law_status": "NOT_VERIFIED",
+        "where_to_look": "https://judgments.ecourts.gov.in"
+      }
+    ],
+    "IN-CPA-2019": [
+      {
+        "id": "jq.consumer.platform_liability",
+        "question": "Is a marketplace liable to the consumer for a seller's product or service?",
+        "settled": "EVOLVING",
+        "turns_on": [
+          "Whether the platform is a mere listing service or holds itself out as responsible for fulfilment.",
+          "The e-commerce obligations on disclosure, grievance redressal and country of origin.",
+          "Whether a person who bought for resale or a commercial purpose is a 'consumer' at all.",
+          "What the platform's own advertising promised, judged as the consumer reasonably understood it."
+        ],
+        "why_it_matters": "Consumer forums look at what the customer reasonably understood, not at what the terms of service said. Marketing copy becomes a promise.",
+        "founder_action": "Keep the advertised claim provable and the grievance route staffed. Do not disclaim in the terms what you promised on the landing page.",
+        "authorities": [],
+        "case_law_status": "NOT_VERIFIED",
+        "where_to_look": "https://judgments.ecourts.gov.in"
+      }
+    ],
+    "IN-NI-1881": [
+      {
+        "id": "jq.cheque.notice_window",
+        "question": "How strictly is the notice window after a cheque is dishonoured applied?",
+        "settled": "WELL_SETTLED",
+        "turns_on": [
+          "The date the return memo is received, which starts the clock — not the date on the cheque.",
+          "Service of the demand notice, and what counts as service when it is refused or returned undelivered.",
+          "The waiting period before a complaint can be filed, and the window after it in which it must be filed.",
+          "Whether the cheque was issued for a legally enforceable debt at all."
+        ],
+        "why_it_matters": "The remedy is lost by silence, not by defeat. A notice sent a week late forfeits it entirely, however strong the underlying claim.",
+        "founder_action": "Diarise the clock the day a cheque is returned. This is calendar management, not legal strategy.",
+        "authorities": [],
+        "case_law_status": "NOT_VERIFIED",
+        "where_to_look": "https://judgments.ecourts.gov.in"
+      }
+    ]
+  }
+}

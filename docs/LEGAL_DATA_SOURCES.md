@@ -24,12 +24,42 @@ court would take them in.
 The floor at 0.80 is the product's spine: a document below it can be indexed
 for a human to read, and can never be the reason Legafy says anything.
 
-**Where an advocate would say we are still thin:** we have no court tier
-populated. Judicial interpretation is what turns a bare provision into advice —
-"is a delivery rider an employee" is not answered by the Code on Wages, it is
-answered by the cases about it. That is a coverage gap, not a design gap, and
-it is the next thing worth funding. It is recorded honestly rather than papered
-over.
+### The court tier, now populated
+
+Judicial interpretation is what turns a bare provision into advice. "Is a
+delivery rider an employee" is not answered by the Code on Wages; it is answered
+by the cases about control, integration and the reality behind the contract.
+`data/judicial_questions.json` carries that layer, and seven court sources are
+watched: the Supreme Court, the government's own judgment portal, and the High
+Court for each state we serve — a state's own court is the one that interprets
+that state's rules.
+
+**How it stays honest.** A fabricated case citation is the single most damaging
+thing a legal tool can emit: it is checkable, it is wrong, and it has ended
+careers elsewhere. So the same rule that keeps penalty amounts out keeps case
+names out. Each entry carries:
+
+- the **question** courts actually decide;
+- **`turns_on`** — the factors they weigh, which is what a lawyer needs and a
+  founder cannot infer;
+- **`settled`** — `WELL_SETTLED` (the principle is stable; the fight is about
+  your facts), `CONTESTED` (courts have gone different ways — budget for the
+  argument), or `EVOLVING` (today's answer may not be next year's);
+- **`authorities: []`** and `case_law_status: NOT_VERIFIED`, until a reviewer has
+  read the judgment on the court's own site.
+
+Questions are returned **unsettled-first**, because that is where a founder's
+assumption is most likely to be wrong and where counsel is most worth paying
+for. A test asserts no `X v. Y` case-name shape, no law-report citation shape
+and no section number appears anywhere in the file.
+
+Eleven questions are seeded — worker classification, restraint of trade, the
+unstamped-instrument-and-arbitration problem, intermediary safe harbour,
+contractor IP ownership, prior use versus registration, software patentability,
+the officer-in-default route to personal liability, marketplace consumer
+liability, the cheque-dishonour notice window, and an explicit statement that
+the new data-protection statute has **no meaningful case law yet**, so anyone
+quoting confident precedent on it is quoting something else.
 
 ---
 

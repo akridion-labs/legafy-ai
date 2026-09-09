@@ -17,7 +17,12 @@
       "url": "https://indiacode.gov.in",
       "authority_tier": "statute_repository",
       "jurisdiction": "IN-CENTRAL",
-      "instrument_ids": ["IN-CO-2013", "IN-LLP-2008", "IN-POSH-2013", "IN-CPA-2019"],
+      "instrument_ids": [
+        "IN-CO-2013",
+        "IN-LLP-2008",
+        "IN-POSH-2013",
+        "IN-CPA-2019"
+      ],
       "check_interval_hours": 168
     },
     {
@@ -26,7 +31,10 @@
       "url": "https://www.meity.gov.in",
       "authority_tier": "ministry",
       "jurisdiction": "IN-CENTRAL",
-      "instrument_ids": ["IN-DPDP-2023", "IN-IT-2000"],
+      "instrument_ids": [
+        "IN-DPDP-2023",
+        "IN-IT-2000"
+      ],
       "check_interval_hours": 24,
       "note": "DPDP subordinate rules commence by notification; this is the page that moves."
     },
@@ -36,7 +44,10 @@
       "url": "https://www.mca.gov.in",
       "authority_tier": "ministry",
       "jurisdiction": "IN-CENTRAL",
-      "instrument_ids": ["IN-CO-2013", "IN-LLP-2008"],
+      "instrument_ids": [
+        "IN-CO-2013",
+        "IN-LLP-2008"
+      ],
       "check_interval_hours": 72
     },
     {
@@ -45,7 +56,11 @@
       "url": "https://labour.gov.in",
       "authority_tier": "ministry",
       "jurisdiction": "IN-CENTRAL",
-      "instrument_ids": ["IN-WAGES-2019", "IN-EPF-1952", "IN-ESI-1948"],
+      "instrument_ids": [
+        "IN-WAGES-2019",
+        "IN-EPF-1952",
+        "IN-ESI-1948"
+      ],
       "check_interval_hours": 72,
       "note": "Labour code commencement is still staged; watch for state rule notifications."
     },
@@ -55,7 +70,9 @@
       "url": "https://www.rbi.org.in",
       "authority_tier": "regulator",
       "jurisdiction": "IN-CENTRAL",
-      "instrument_ids": ["IN-FEMA-1999"],
+      "instrument_ids": [
+        "IN-FEMA-1999"
+      ],
       "check_interval_hours": 24,
       "note": "Payment aggregator and escrow directions — the RED lane's primary source."
     },
@@ -65,7 +82,11 @@
       "url": "https://labour.telangana.gov.in",
       "authority_tier": "state_portal",
       "jurisdiction": "IN-TG",
-      "instrument_ids": ["TG-SE-1988", "TG-LWF-1987", "TG-CLRA-RULES"],
+      "instrument_ids": [
+        "TG-SE-1988",
+        "TG-LWF-1987",
+        "TG-CLRA-RULES"
+      ],
       "check_interval_hours": 168
     },
     {
@@ -74,7 +95,9 @@
       "url": "https://tgct.gov.in",
       "authority_tier": "state_portal",
       "jurisdiction": "IN-TG",
-      "instrument_ids": ["TG-PT-1987"],
+      "instrument_ids": [
+        "TG-PT-1987"
+      ],
       "check_interval_hours": 168
     },
     {
@@ -83,7 +106,10 @@
       "url": "https://labour.ap.gov.in",
       "authority_tier": "state_portal",
       "jurisdiction": "IN-AP",
-      "instrument_ids": ["AP-SE-1988", "AP-LWF-1987"],
+      "instrument_ids": [
+        "AP-SE-1988",
+        "AP-LWF-1987"
+      ],
       "check_interval_hours": 168
     },
     {
@@ -92,7 +118,9 @@
       "url": "https://apct.gov.in",
       "authority_tier": "state_portal",
       "jurisdiction": "IN-AP",
-      "instrument_ids": ["AP-PT-1987"],
+      "instrument_ids": [
+        "AP-PT-1987"
+      ],
       "check_interval_hours": 168
     },
     {
@@ -101,7 +129,10 @@
       "url": "https://mahakamgar.maharashtra.gov.in",
       "authority_tier": "state_portal",
       "jurisdiction": "IN-MH",
-      "instrument_ids": ["MH-SE-2017", "MH-LWF-1953"],
+      "instrument_ids": [
+        "MH-SE-2017",
+        "MH-LWF-1953"
+      ],
       "check_interval_hours": 168
     },
     {
@@ -110,7 +141,9 @@
       "url": "https://www.mahagst.gov.in",
       "authority_tier": "state_portal",
       "jurisdiction": "IN-MH",
-      "instrument_ids": ["MH-PT-1975"],
+      "instrument_ids": [
+        "MH-PT-1975"
+      ],
       "check_interval_hours": 168
     },
     {
@@ -119,7 +152,10 @@
       "url": "https://labour.karnataka.gov.in",
       "authority_tier": "state_portal",
       "jurisdiction": "IN-KA",
-      "instrument_ids": ["KA-SCE-1961", "KA-LWF-1965"],
+      "instrument_ids": [
+        "KA-SCE-1961",
+        "KA-LWF-1965"
+      ],
       "check_interval_hours": 168,
       "note": "IT/ITES exemption notifications are reissued periodically — the single most change-prone entry in the Karnataka set."
     },
@@ -129,7 +165,9 @@
       "url": "https://ctax.kar.nic.in",
       "authority_tier": "state_portal",
       "jurisdiction": "IN-KA",
-      "instrument_ids": ["KA-PT-1976"],
+      "instrument_ids": [
+        "KA-PT-1976"
+      ],
       "check_interval_hours": 168
     },
     {
@@ -138,7 +176,75 @@
       "url": "https://labour.delhi.gov.in",
       "authority_tier": "state_portal",
       "jurisdiction": "IN-DL",
-      "instrument_ids": ["DL-SE-1954", "DL-LWF-1975"],
+      "instrument_ids": [
+        "DL-SE-1954",
+        "DL-LWF-1975"
+      ],
+      "check_interval_hours": 168
+    },
+    {
+      "source_id": "in-sci",
+      "title": "Supreme Court of India — judgments",
+      "url": "https://www.sci.gov.in",
+      "authority_tier": "court",
+      "jurisdiction": "IN-CENTRAL",
+      "instrument_ids": [],
+      "check_interval_hours": 168,
+      "note": "Interpretation, not enactment. Below the gazette by design; still the citable floor."
+    },
+    {
+      "source_id": "in-ecourts-judgments",
+      "title": "eCourts judgment search (all courts)",
+      "url": "https://judgments.ecourts.gov.in",
+      "authority_tier": "court",
+      "jurisdiction": "IN-CENTRAL",
+      "instrument_ids": [],
+      "check_interval_hours": 168,
+      "note": "The government's own judgment portal. Third-party 'eCourts APIs' are resellers and rank as aggregators, not as courts."
+    },
+    {
+      "source_id": "tg-hc",
+      "title": "High Court for the State of Telangana",
+      "url": "https://tshc.gov.in",
+      "authority_tier": "court",
+      "jurisdiction": "IN-TG",
+      "instrument_ids": [],
+      "check_interval_hours": 168
+    },
+    {
+      "source_id": "ap-hc",
+      "title": "High Court of Andhra Pradesh",
+      "url": "https://aphc.gov.in",
+      "authority_tier": "court",
+      "jurisdiction": "IN-AP",
+      "instrument_ids": [],
+      "check_interval_hours": 168
+    },
+    {
+      "source_id": "mh-hc",
+      "title": "High Court of Bombay",
+      "url": "https://bombayhighcourt.nic.in",
+      "authority_tier": "court",
+      "jurisdiction": "IN-MH",
+      "instrument_ids": [],
+      "check_interval_hours": 168
+    },
+    {
+      "source_id": "ka-hc",
+      "title": "High Court of Karnataka",
+      "url": "https://karnatakajudiciary.kar.nic.in",
+      "authority_tier": "court",
+      "jurisdiction": "IN-KA",
+      "instrument_ids": [],
+      "check_interval_hours": 168
+    },
+    {
+      "source_id": "dl-hc",
+      "title": "High Court of Delhi",
+      "url": "https://delhihighcourt.nic.in",
+      "authority_tier": "court",
+      "jurisdiction": "IN-DL",
+      "instrument_ids": [],
       "check_interval_hours": 168
     }
   ]

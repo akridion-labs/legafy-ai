@@ -124,6 +124,20 @@ def compact_audit(full: dict[str, Any], sections: list[str] | None = None) -> di
         ]
         compact["playbooks"] = ledger.get("playbooks", {})
         compact["quantum_note"] = ledger.get("quantum_note", "")
+        # The court tier. `turns_on` is the part a founder cannot infer and a
+        # lawyer needs; the prose around it is already in the tool description.
+        if ledger.get("judicial_questions"):
+            compact["judicial"] = [
+                {
+                    "ref": q["instrument_ref"],
+                    "settled": q["settled"],
+                    "question": q["question"],
+                    "turns_on": q["turns_on"],
+                    "why": q["why_it_matters"],
+                    "do": q["founder_action"],
+                }
+                for q in ledger["judicial_questions"]
+            ]
 
     if not want("proofs"):
         compact.pop("proofs", None)
