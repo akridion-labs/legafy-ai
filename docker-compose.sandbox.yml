@@ -1,0 +1,39 @@
+# =============================================================================
+# Legafy AI — sandbox overlay
+#
+#   ./scripts/sandbox.sh                                    # mint the token
+#   docker compose -f docker-compose.yml -f docker-compose.sandbox.yml up -d api
+#
+# Runs the same image as production against an isolated tenant registry and an
+# isolated audit vault, with the offline provider so no model API key is needed
+# and nothing leaves the machine. Only the `api` service — cloudflared is for
+# the real deployment and a local tester does not want a public hostname.
+#
+# `sandbox/` is bind-mounted read-write so the token minted on the host is the
+# one the container reads, and so the vault a tester produces survives the
+# container. Without that mount the registry lives only inside the image and
+# every `up` would silently invalidate the token you just handed someone.
+# =============================================================================
+
+services:
+  api:
+    # No env_file: the sandbox must not inherit a real .env by accident. If the
+    # production .env named a live provider key or a real registry, a "sandbox"
+    # inheriting it would be neither isolated nor offline.
+    env_file: []
+    environment:
+      LEGAFY_ENV: development
+      LEGAFY_LOG_LEVEL: DEBUG
+      LEGAFY_PROVIDER_CHAIN: offline
+      LEGAFY_BOOTSTRAP_TOKENS_ENABLED: "false"
+      LEGAFY_LICENSE_REGISTRY_PATH: /workspace/sandbox/license_registry.json
+      LEGAFY_GENERATED_DIR: /workspace/sandbox/generated
+      LEGAFY_AUDIT_VAULT_PATH: /workspace/sandbox/generated/akrigon_audit_vault.json
+      LEGAFY_TELEMETRY_SALT: sandbox-salt-not-for-production
+    volumes:
+      - ./sandbox:/workspace/sandbox
+      - ./data:/workspace/data:ro
+    ports:
+      # Loopback only. A sandbox with a minted token is still not something to
+      # put on 0.0.0.0 — for a remote tester use the tunnel, see the playbook.
+      - "127.0.0.1:8000:8000"

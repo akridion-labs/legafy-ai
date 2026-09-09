@@ -34,3 +34,6 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
+
+# Sandbox instance: minted tokens, its own vault. Never committed.
+sandbox/

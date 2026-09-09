@@ -35,6 +35,7 @@ make audit        # pip-audit against the pinned dependency set
 make validate     # plugin manifests, tool schema portability, config examples
 make validate-live # + a real MCP initialize / tools/list / tools/call
 make sources-check # every citation https, official, whitelisted, not migrated
+make sandbox      # isolated instance + minted token for a tester (docs/TESTING_PLAYBOOK.md)
 make up / down    # docker compose stack (api + cloudflared [+ redis])
 ```
 
@@ -79,7 +80,8 @@ See `docs/LEGAL_DATA_SOURCES.md` for the source hierarchy and what
 machine-readable legal data actually exists in India,
 `docs/POSITIONING_VS_LEGAL_PLUGIN.md` for how this sits next to Anthropic's
 `legal` plugin, `docs/INSTALL_ANY_PLATFORM.md` for the two install paths,
-`docs/LOCAL_TESTING.md` to run it on a Mac, `SECURITY.md` for the audit findings and the assumptions this system
+`docs/LOCAL_TESTING.md` to run it on a Mac,
+`docs/TESTING_PLAYBOOK.md` to hand to a tester (including one abroad), `SECURITY.md` for the audit findings and the assumptions this system
 refuses to make, and `docs/SEARCH_DESIGN.md` for the retrieval cascade.
 
 ## Agent
