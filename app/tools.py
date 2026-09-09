@@ -23,6 +23,7 @@ from app.models.schemas import (
     LegalSourceSearchRequest,
     RegionalComplianceAuditRequest,
     ReviewQueueRequest,
+    SourceHealthRequest,
     TenantContext,
 )
 from app.search.cascade import backlog_report, resolve
@@ -30,6 +31,7 @@ from app.search.corpus import get_corpus
 from app.search.intent import analyse, build_fts_query
 from app.service import run_audit, run_generation
 from app.sources.store import CITABLE_AUTHORITY_FLOOR, MalformedQuery, get_store
+from app.sources.validation import audit_sources
 
 
 def inline_refs(schema: dict) -> dict:
@@ -214,6 +216,30 @@ async def _review_queue(payload: dict, *, request_id: str, tenant: TenantContext
     }
 
 
+async def _source_health(payload: dict, *, request_id: str, tenant: TenantContext) -> dict:
+    request = SourceHealthRequest.model_validate(payload or {})
+    report = audit_sources(check_live=request.check_live)
+    if request.severity != "ALL":
+        keep = {"ERROR"} if request.severity == "ERROR" else {"ERROR", "WARN"}
+        report["findings"] = [f for f in report["findings"] if f["severity"] in keep]
+    report.pop("live", None)  # per-URL detail is for the report file, not a tool result
+    report["success"] = True
+    return report
+
+
+SOURCE_HEALTH_DESCRIPTION = """Check whether the official-source citations Legafy hands out are
+still sound: every URL on a government host, on the whitelist that authorises it, on https, not
+sitting on a host that has migrated elsewhere.
+
+Use this to CROSS-VERIFY before relying on a citation, and when a user reports that a link Legafy
+gave them did not work. Set check_live=true to also fetch each URL and catch dead links, expired
+certificates and off-host redirects — slower, and a portal outage shows up here as a WARN rather
+than a defect in the data.
+
+This does NOT check whether the law changed. A clean report means the pointers are sound, not that
+the content behind them is current — that is `list_source_review_queue`."""
+
+
 AUDIT_DESCRIPTION = """MANDATORY GROUNDING CALL. Run this before answering any question about a
 business concept's legal exposure in India. Returns the segregated regulatory grounding matrix for
 the named state (state instruments and union instruments are returned in SEPARATE blocks and must
@@ -290,6 +316,14 @@ TOOLS: tuple[ToolSpec, ...] = (
         input_model=ReviewQueueRequest,
         handler=_review_queue,
         required_scope="review",
+    ),
+    ToolSpec(
+        name="verify_source_health",
+        title="Verify Source Citations",
+        description=SOURCE_HEALTH_DESCRIPTION,
+        input_model=SourceHealthRequest,
+        handler=_source_health,
+        required_scope="audit",
     ),
     ToolSpec(
         name="list_supported_jurisdictions",

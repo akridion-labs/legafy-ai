@@ -7,16 +7,20 @@
   "verification_status": "SEED_UNVERIFIED",
   "verification_note": "Instrument titles and years are seed metadata compiled for routing. Section numbers, sub-clauses, thresholds and penalty amounts are deliberately absent and must be populated only from the whitelisted primary sources below by a reviewer before this file is marked VERIFIED.",
   "source_whitelist": [
+    "https://consumeraffairs.nic.in",
     "https://copyright.gov.in",
     "https://egazette.gov.in",
+    "https://indiacode.gov.in",
     "https://ipindia.gov.in",
     "https://labour.gov.in",
     "https://udyamregistration.gov.in",
+    "https://www.epfindia.gov.in",
+    "https://www.esic.gov.in",
     "https://www.gst.gov.in",
     "https://www.incometax.gov.in",
-    "https://www.indiacode.nic.in",
     "https://www.mca.gov.in",
-    "https://www.meity.gov.in"
+    "https://www.meity.gov.in",
+    "https://www.rbi.org.in"
   ],
   "instruments": [
     {
@@ -309,7 +313,7 @@
       "title": "Sexual Harassment of Women at Workplace (Prevention, Prohibition and Redressal) Act, 2013",
       "domain": "labour",
       "authority": "Ministry of Women and Child Development",
-      "citation_url": "https://www.indiacode.nic.in",
+      "citation_url": "https://indiacode.gov.in",
       "applies_when": [
         "employs_persons"
       ],
@@ -462,7 +466,7 @@
       "title": "Indian Contract Act, 1872",
       "domain": "contract",
       "authority": "Ministry of Law and Justice",
-      "citation_url": "https://www.indiacode.nic.in",
+      "citation_url": "https://indiacode.gov.in",
       "applies_when": [
         "any_entity"
       ],
@@ -496,7 +500,7 @@
       "title": "Indian Stamp Act, 1899 (read with the applicable State Stamp Act)",
       "domain": "contract",
       "authority": "Department of Revenue / State Registration and Stamps Department",
-      "citation_url": "https://www.indiacode.nic.in",
+      "citation_url": "https://indiacode.gov.in",
       "applies_when": [
         "any_entity"
       ],
@@ -525,7 +529,7 @@
       "title": "Registration Act, 1908",
       "domain": "contract",
       "authority": "State Registration and Stamps Department",
-      "citation_url": "https://www.indiacode.nic.in",
+      "citation_url": "https://indiacode.gov.in",
       "applies_when": [
         "has_workplace_in_state",
         "establishes_industrial_unit"
@@ -545,7 +549,7 @@
       "title": "Arbitration and Conciliation Act, 1996",
       "domain": "dispute_resolution",
       "authority": "Ministry of Law and Justice",
-      "citation_url": "https://www.indiacode.nic.in",
+      "citation_url": "https://indiacode.gov.in",
       "applies_when": [
         "any_entity"
       ],
@@ -574,7 +578,7 @@
       "title": "Negotiable Instruments Act, 1881",
       "domain": "dispute_resolution",
       "authority": "Ministry of Finance",
-      "citation_url": "https://www.indiacode.nic.in",
+      "citation_url": "https://indiacode.gov.in",
       "applies_when": [
         "supplies_goods_or_services",
         "sells_to_consumers"

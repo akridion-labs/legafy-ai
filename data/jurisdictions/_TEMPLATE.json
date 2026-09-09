@@ -9,7 +9,7 @@
   "verification_note": "Explain here what a reviewer must confirm before this file is promoted to VERIFIED.",
   "source_whitelist": [
     "https://<state-labour-portal>.gov.in",
-    "https://www.indiacode.nic.in"
+    "https://indiacode.gov.in"
   ],
   "instruments": [
     {

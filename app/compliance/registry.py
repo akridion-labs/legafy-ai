@@ -34,7 +34,8 @@ UNION_CODE = "IN-CENTRAL"
 # citation guard, which is what keeps "the model found it on a blog" out of a
 # compliance artefact.
 GLOBAL_SOURCE_WHITELIST: tuple[str, ...] = (
-    "indiacode.nic.in",
+    "indiacode.gov.in",   # migrated from indiacode.nic.in
+    "indiacode.nic.in",   # kept: old links in the wild still resolve to a notice
     "egazette.gov.in",
     "mca.gov.in",
     "meity.gov.in",

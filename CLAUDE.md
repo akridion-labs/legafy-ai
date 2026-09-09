@@ -14,6 +14,7 @@ app/
   compliance/          grounding matrix, citation guard, traffic-light guardrails
                        obligations.py = duty -> how to close -> exposure, + IP screen
                        research.py    = the register searches a founder must run
+  sources/validation.py  citation health: https, official host, whitelisted, not migrated
   search/cascade.py    local-first retrieval: L0 matrix, L1 index, L3 recorded miss
   providers/           model-agnostic router: anthropic | openai | ollama | offline
   pipeline/            anti-truncation chunk assembly → Markdown → DOCX
@@ -32,6 +33,7 @@ make smoke        # end-to-end: audit + 20-page DOCX with the offline provider
 make audit        # pip-audit against the pinned dependency set
 make validate     # plugin manifests, tool schema portability, config examples
 make validate-live # + a real MCP initialize / tools/list / tools/call
+make sources-check # every citation https, official, whitelisted, not migrated
 make up / down    # docker compose stack (api + cloudflared [+ redis])
 ```
 
@@ -59,7 +61,15 @@ make up / down    # docker compose stack (api + cloudflared [+ redis])
    runtimes ignore them, and the failure mode is an enum silently accepting
    any string.
 
-See `docs/INSTALL_ANY_PLATFORM.md` for the two install paths,
+10. **The citation is the product.** Legafy never states a rule, it points at the
+    official page. A citation must be https, on a government host, on the
+    whitelist that authorises it, and not on a migrated host. `make sources-check`
+    in CI; `verify_source_health` for the agent.
+
+See `docs/LEGAL_DATA_SOURCES.md` for the source hierarchy and what
+machine-readable legal data actually exists in India,
+`docs/POSITIONING_VS_LEGAL_PLUGIN.md` for how this sits next to Anthropic's
+`legal` plugin, `docs/INSTALL_ANY_PLATFORM.md` for the two install paths,
 `docs/LOCAL_TESTING.md` to run it on a Mac, `SECURITY.md` for the audit findings and the assumptions this system
 refuses to make, and `docs/SEARCH_DESIGN.md` for the retrieval cascade.
 

@@ -483,3 +483,46 @@ def test_research_checklist_promises_no_results():
         for search in phase["searches"]:
             assert search["proves"] and search["if_skipped"]
             assert "result" not in search
+
+
+# --- Source validity: the citation IS the product ---------------------------
+def test_every_citation_is_https_official_and_whitelisted():
+    """A stale or unofficial citation is the failure a user sees first.
+
+    This caught a real one: indiacode.nic.in had migrated to indiacode.gov.in,
+    so our most-cited host was answering with a migration notice — which reads
+    as 'working' to every automated check that only looks at the status code.
+    """
+    from app.sources.validation import audit_sources
+
+    report = audit_sources(check_live=False)
+    errors = [f for f in report["findings"] if f["severity"] == "ERROR"]
+    assert not errors, "\n".join(f"{f['code']}: {f['url']} — {f['detail']}" for f in errors)
+
+
+def test_no_citation_sits_on_a_known_migrated_host():
+    from app.sources.validation import KNOWN_MIGRATIONS, collect_citations, host_of
+
+    for url in collect_citations():
+        assert host_of(url) not in KNOWN_MIGRATIONS, url
+
+
+def test_unofficial_and_insecure_hosts_are_rejected():
+    from app.sources.validation import is_official_host
+
+    assert is_official_host("indiacode.gov.in")
+    assert is_official_host("www.mca.gov.in")
+    assert is_official_host("labour.telangana.gov.in")
+    assert not is_official_host("indiankanoon.org")
+    assert not is_official_host("mca-gov-in.example.com")
+    assert not is_official_host("legalblog.in")
+
+
+def test_source_health_tool_is_exposed_and_defaults_to_offline():
+    """The agent needs a way to cross-verify without making the check itself
+    a way to fire tens of requests at government portals by accident."""
+    from app.models.schemas import SourceHealthRequest
+    from app.tools import TOOLS_BY_NAME
+
+    assert "verify_source_health" in TOOLS_BY_NAME
+    assert SourceHealthRequest().check_live is False

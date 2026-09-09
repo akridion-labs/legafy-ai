@@ -453,6 +453,26 @@ class LegalSourceSearchResponse(BaseModel):
     disclaimer: str
 
 
+class SourceHealthRequest(BaseModel):
+    """Ask whether the citations Legafy hands out are still sound."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    check_live: bool = Field(
+        default=False,
+        description=(
+            "Also fetch every citation to check it is reachable, on a valid certificate, "
+            "and not redirecting off the official host. Off by default: it makes tens of "
+            "outbound requests to government portals and takes seconds, and a portal outage "
+            "is not a defect in our data."
+        ),
+    )
+    severity: Literal["ERROR", "WARN", "ALL"] = Field(
+        default="ERROR",
+        description="Minimum severity to return. ERROR is what must be fixed before shipping.",
+    )
+
+
 class ReviewQueueRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 

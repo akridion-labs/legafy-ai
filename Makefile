@@ -2,7 +2,7 @@
 # Legafy AI — developer & operations entrypoints
 # =============================================================================
 
-.PHONY: help install lint fmt test audit validate validate-live run smoke mcp build up up-host up-full down logs ps tunnel bootstrap clean audit-verify watch taxonomy
+.PHONY: help install lint fmt test audit validate validate-live sources-check run smoke mcp build up up-host up-full down logs ps tunnel bootstrap clean audit-verify watch taxonomy
 
 VENV        ?= .venv
 # Interpreter used to CREATE the venv. Python 3.11-3.14 all work: every pin is
@@ -39,6 +39,12 @@ validate: ## Validate plugin manifests, tool schemas and client config examples
 
 validate-live: ## Validate, then run a real MCP initialize / tools/list / tools/call
 	$(PYTHON) scripts/validate_integration.py --live
+
+sources-check: ## Check every citation is https, official, whitelisted and not migrated
+	$(PYTHON) -m app.sources.validation
+
+sources-check-live: ## Also fetch each citation: dead links, bad certs, off-host redirects
+	$(PYTHON) -m app.sources.validation --live
 
 run: ## Run the API locally with autoreload
 	$(VENV)/bin/uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
