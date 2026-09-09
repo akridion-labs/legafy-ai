@@ -47,6 +47,9 @@ GLOBAL_SOURCE_WHITELIST: tuple[str, ...] = (
     "rbi.org.in",
     "sebi.gov.in",
     "consumeraffairs.nic.in",
+    "lc.kerala.gov.in",
+    "kswift.kerala.gov.in",
+    "lsgkerala.gov.in",
     # Court tier — interpretation. Below the gazette by design, and the citable floor.
     "sci.gov.in",
     "judgments.ecourts.gov.in",

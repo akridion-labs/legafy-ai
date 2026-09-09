@@ -39,6 +39,7 @@ learns to ignore.
 from __future__ import annotations
 
 import json
+import re
 import ssl
 import urllib.error
 import urllib.request
@@ -141,12 +142,109 @@ def _probe(url: str, timeout: float) -> tuple[str, Any, str]:
         return url, type(exc).__name__, str(exc)[:160]
 
 
+# Instrument ids must be prefixed with their file's state code. This is the
+# anti-copy-paste guard: the cheapest way to build a new state is to duplicate a
+# neighbour's file, and the tell is a TG-prefixed instrument sitting in the
+# Kerala file. That produces a state that looks populated and is wrong, which is
+# worse than a state that is honestly absent.
+def audit_jurisdictions() -> list[Finding]:
+    """Structural checks on the grounding matrix itself."""
+    findings: list[Finding] = []
+    alias_owner: dict[str, str] = {}
+
+    for path in sorted(JURISDICTION_DIR.glob("*.json")):
+        if path.name.startswith("_"):
+            continue
+        data = json.loads(path.read_text(encoding="utf-8"))
+        code = data["code"]
+        where = path.name
+        prefix = code.split("-", 1)[1] + "-" if "-" in code else code
+
+        for required in ("display_name", "isolation_group", "verification_status",
+                         "verification_note", "source_whitelist", "instruments"):
+            if not data.get(required):
+                findings.append(Finding("ERROR", "jurisdiction_incomplete", where,
+                                        f"{code} is missing {required!r}.", [code]))
+
+        if code != "IN-CENTRAL":
+            if not data.get("aliases"):
+                findings.append(Finding("ERROR", "no_aliases", where,
+                                        f"{code} has no aliases, so a user typing the state's "
+                                        "own name may not resolve it.", [code]))
+            if not data.get("state_escalation_triggers"):
+                findings.append(Finding("WARN", "no_escalation_triggers", where,
+                                        f"{code} declares no state traps. Every state has at "
+                                        "least one thing that surprises an outsider.", [code]))
+
+        for alias in data.get("aliases", []):
+            owner = alias_owner.get(alias.lower())
+            if owner and owner != code:
+                findings.append(Finding("ERROR", "alias_collision", alias,
+                                        f"Claimed by both {owner} and {code}. One would silently "
+                                        "answer for the other — the exact failure state isolation "
+                                        "exists to prevent.", [owner, code]))
+            alias_owner[alias.lower()] = code
+
+        listed_hosts = {host_of(u) for u in data.get("source_whitelist", [])}
+        seen_ids: set[str] = set()
+        for instrument in data.get("instruments", []):
+            iid = instrument.get("id", "")
+            if iid in seen_ids:
+                findings.append(Finding("ERROR", "duplicate_instrument_id", iid,
+                                        f"Appears twice in {code}.", [code]))
+            seen_ids.add(iid)
+
+            if code != "IN-CENTRAL" and not iid.startswith(prefix):
+                findings.append(Finding("ERROR", "foreign_instrument_id", iid,
+                                        f"Instrument in {code} is not prefixed {prefix!r}. This is "
+                                        "the signature of a file copied from another state.", [code]))
+
+            if instrument.get("citation_url") and host_of(instrument["citation_url"]) not in listed_hosts:
+                findings.append(Finding("WARN", "citation_outside_own_whitelist",
+                                        instrument["citation_url"],
+                                        f"{iid} cites a host {code} does not list in its own "
+                                        "source_whitelist.", [code]))
+
+            if not instrument.get("obligations"):
+                findings.append(Finding("ERROR", "instrument_without_obligations", iid,
+                                        "An instrument with no obligations tells a founder nothing.",
+                                        [code]))
+
+            if instrument.get("penalty_schedule") is not None and \
+                    instrument.get("penalty_status") != "VERIFIED":
+                findings.append(Finding("ERROR", "unverified_penalty_present", iid,
+                                        "A penalty schedule is present without VERIFIED status.",
+                                        [code]))
+
+            for ob in instrument.get("obligations", []):
+                text = f"{ob.get('summary', '')}"
+                if re.search(r"\bsection\s+\d", text, re.IGNORECASE):
+                    findings.append(Finding("ERROR", "section_number_in_summary", iid,
+                                            f"Obligation {ob.get('key')!r} names a section number.",
+                                            [code]))
+                if re.search(r"(?:₹|Rs\.?|INR)\s?[\d,]+", text):
+                    findings.append(Finding("ERROR", "penalty_amount_in_summary", iid,
+                                            f"Obligation {ob.get('key')!r} states an amount.",
+                                            [code]))
+                if str(ob.get("lane", "")).upper() not in {"GREEN", "AMBER", "RED"}:
+                    findings.append(Finding("ERROR", "bad_lane", iid,
+                                            f"Obligation {ob.get('key')!r} has lane "
+                                            f"{ob.get('lane')!r}.", [code]))
+
+        for absence in data.get("state_level_absences", []):
+            if absence.get("verification_status") == "VERIFIED" and not absence.get("instruction"):
+                findings.append(Finding("WARN", "absence_without_instruction", where,
+                                        "A declared absence is a claim like any other and needs "
+                                        "an instruction for how to treat it.", [code]))
+    return findings
+
+
 def audit_sources(
     *, check_live: bool = False, timeout: float = 20.0, workers: int = 8
 ) -> dict[str, Any]:
     """Audit every citation Legafy hands out. Structure always, liveness on request."""
     urls = collect_citations()
-    findings: list[Finding] = []
+    findings: list[Finding] = audit_jurisdictions()
 
     whitelisted_hosts = {h.lower() for h in GLOBAL_SOURCE_WHITELIST}
 

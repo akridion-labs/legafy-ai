@@ -20,7 +20,8 @@ app/
   providers/           model-agnostic router: anthropic | openai | ollama | offline
   pipeline/            anti-truncation chunk assembly → Markdown → DOCX
   mcp/server.py        MCP stdio server exposing the same tools
-data/jurisdictions/    one JSON file per isolated code path (IN-TG, IN-AP, …)
+data/jurisdictions/    one JSON file per isolated code path (IN-TG, IN-AP, IN-KL, …)
+                       adding one: docs/ADDING_A_JURISDICTION.md — assume NOTHING
 generated/             runtime output + audit vault (gitignored, never committed)
 ```
 
@@ -34,7 +35,8 @@ make smoke        # end-to-end: audit + 20-page DOCX with the offline provider
 make audit        # pip-audit against the pinned dependency set
 make validate     # plugin manifests, tool schema portability, config examples
 make validate-live # + a real MCP initialize / tools/list / tools/call
-make sources-check # every citation https, official, whitelisted, not migrated
+make sources-check # citations + the matrix itself: no foreign instrument prefixes,
+                  #   no alias collisions, no section numbers or amounts in data
 make sandbox      # isolated instance + minted token for a tester (docs/TESTING_PLAYBOOK.md)
 make up / down    # docker compose stack (api + cloudflared [+ redis])
 ```
@@ -76,7 +78,14 @@ make up / down    # docker compose stack (api + cloudflared [+ redis])
     registration is live. It can never say anyone is compliant, never enters the
     grounding matrix, and never moves a lane.
 
-See `docs/LEGAL_DATA_SOURCES.md` for the source hierarchy and what
+13. **A state is compiled by hand, never by analogy.** The one thing that varies
+    most between Indian states is which authority levies what, on which cycle —
+    exactly what a copied file preserves. `make sources-check` fails on a foreign
+    instrument prefix, but that is a backstop. Read `docs/ADDING_A_JURISDICTION.md`.
+    When sources disagree on a title's year, OMIT the year and say why.
+
+See `docs/ADDING_A_JURISDICTION.md` for how to add a state without assuming,
+`docs/LEGAL_DATA_SOURCES.md` for the source hierarchy and what
 machine-readable legal data actually exists in India,
 `docs/POSITIONING_VS_LEGAL_PLUGIN.md` for how this sits next to Anthropic's
 `legal` plugin, `docs/INSTALL_ANY_PLATFORM.md` for the two install paths,

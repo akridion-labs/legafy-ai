@@ -246,6 +246,39 @@
       "jurisdiction": "IN-DL",
       "instrument_ids": [],
       "check_interval_hours": 168
+    },
+    {
+      "source_id": "kl-courts",
+      "title": "Kerala judgments via the eCourts judgment portal",
+      "url": "https://judgments.ecourts.gov.in",
+      "authority_tier": "court",
+      "jurisdiction": "IN-KL",
+      "instrument_ids": [],
+      "check_interval_hours": 168,
+      "note": "The High Court of Kerala's own hostname was not confirmed at compile time, so it is NOT listed here. The government's judgment portal is used instead. Add the court's own site only after confirming the host — an unverified court hostname is exactly the kind of citation that looks right and is not."
+    },
+    {
+      "source_id": "kl-labour",
+      "title": "Labour Commissionerate, Government of Kerala",
+      "url": "https://lc.kerala.gov.in",
+      "authority_tier": "state_portal",
+      "jurisdiction": "IN-KL",
+      "instrument_ids": [
+        "KL-SCE-1960",
+        "KL-LWF"
+      ],
+      "check_interval_hours": 168
+    },
+    {
+      "source_id": "kl-kswift",
+      "title": "K-SWIFT single window, Kerala",
+      "url": "https://kswift.kerala.gov.in",
+      "authority_tier": "state_portal",
+      "jurisdiction": "IN-KL",
+      "instrument_ids": [
+        "KL-KSWIFT"
+      ],
+      "check_interval_hours": 168
     }
   ]
 }

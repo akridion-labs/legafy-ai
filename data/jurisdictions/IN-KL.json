@@ -1,0 +1,150 @@
+{
+  "code": "IN-KL",
+  "display_name": "Kerala",
+  "aliases": [
+    "kerala",
+    "kl",
+    "in-kl",
+    "kochi",
+    "cochin",
+    "ernakulam",
+    "thiruvananthapuram",
+    "trivandrum",
+    "kozhikode",
+    "calicut",
+    "infopark",
+    "technopark"
+  ],
+  "isolation_group": "IN-KL",
+  "tier": "state",
+  "seed_compiled_on": "2026-09-09",
+  "verification_status": "SEED_UNVERIFIED",
+  "verification_note": "Kerala is a fully segregated code path. Do NOT read Karnataka or Tamil Nadu entries across to it. One divergence is structural rather than cosmetic and is the reason this file was compiled by hand rather than by analogy: Kerala levies profession tax through LOCAL SELF-GOVERNMENT INSTITUTIONS under the Kerala Municipality Act and the Kerala Panchayat Raj Act, not through a dedicated state profession-tax Act of the kind Telangana, Andhra Pradesh, Karnataka and Maharashtra each have. A file produced by copying a neighbouring state would have invented a 'Kerala Profession Tax Act' that does not exist. Instrument titles and years here are seed metadata for routing; section numbers, thresholds, slabs and penalties are deliberately absent and must be populated only from the whitelisted sources below by a reviewer before this file is marked VERIFIED.",
+  "source_whitelist": [
+    "https://lc.kerala.gov.in",
+    "https://kswift.kerala.gov.in",
+    "https://lsgkerala.gov.in",
+    "https://www.kerala.gov.in",
+    "https://indiacode.gov.in"
+  ],
+  "instruments": [
+    {
+      "id": "KL-SCE-1960",
+      "title": "Kerala Shops and Commercial Establishments Act, 1960",
+      "domain": "labour",
+      "authority": "Labour Commissionerate, Government of Kerala",
+      "citation_url": "https://lc.kerala.gov.in",
+      "applies_when": ["has_workplace_in_state"],
+      "obligations": [
+        {
+          "key": "establishment_registration",
+          "summary": "Shops and commercial establishments operating in the state register with the state labour department. A co-working desk is an establishment for this purpose.",
+          "lane": "GREEN"
+        },
+        {
+          "key": "working_hours_and_leave",
+          "summary": "Working hours, weekly holidays, overtime and leave entitlements are set by state rules and differ from neighbouring states.",
+          "lane": "AMBER"
+        },
+        {
+          "key": "night_shift_conditions",
+          "summary": "Conditions attached to night working, particularly for women employees, are state-notified and are not the same as any other state's.",
+          "lane": "AMBER"
+        },
+        {
+          "key": "seating_and_facilities",
+          "summary": "Kerala notified a right-to-sit style amendment for employees in shops and commercial establishments. Whether and how it applies to a given workplace is a state-specific question a reviewer must confirm.",
+          "lane": "AMBER"
+        }
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    },
+    {
+      "id": "KL-PT-LOCAL",
+      "title": "Profession tax under the Kerala Municipality Act, 1994 and the Kerala Panchayat Raj Act, 1994",
+      "domain": "taxation",
+      "authority": "The municipality, municipal corporation or grama panchayat for the place of work",
+      "citation_url": "https://lsgkerala.gov.in",
+      "applies_when": ["employs_persons", "carries_on_profession_in_state"],
+      "commencement_note": "Structurally unlike the profession-tax regimes in Telangana, Andhra Pradesh, Karnataka and Maharashtra. In Kerala the levy sits with the local self-government institution for the place of work, under the Municipality Act or the Panchayat Raj Act and rules made under them, not under a standalone state profession-tax Act. Which body assesses you therefore depends on your ADDRESS, not merely on your state.",
+      "obligations": [
+        {
+          "key": "local_body_registration",
+          "summary": "An employer registers and pays profession tax to the local body for the place of work — a municipality, a municipal corporation or a grama panchayat. Moving offices between local bodies can change who assesses you.",
+          "lane": "AMBER"
+        },
+        {
+          "key": "half_yearly_cycle",
+          "summary": "The levy runs on a half-yearly cycle rather than the monthly cycle several other states use, so a payroll calendar built for another state will be on the wrong clock here.",
+          "lane": "AMBER"
+        },
+        {
+          "key": "deduct_and_remit",
+          "summary": "The employer deducts from employees and remits to the local body; slabs are set by the local body within the statutory frame and must be read for the specific body, not assumed from a state-wide table.",
+          "lane": "AMBER"
+        }
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    },
+    {
+      "id": "KL-LWF",
+      "title": "Kerala Labour Welfare Fund Act",
+      "domain": "labour",
+      "authority": "Kerala Labour Welfare Fund Board",
+      "citation_url": "https://lc.kerala.gov.in",
+      "applies_when": ["employs_persons"],
+      "commencement_note": "TITLE YEAR DELIBERATELY OMITTED. Public sources disagree — the same statute is cited as 1975, as 1977 and as 1979 in different places, including on official-adjacent repositories. Rather than pick one and be confidently wrong, the year is left out and a reviewer must confirm it from the gazette or India Code before this instrument is marked VERIFIED. An invented year is exactly the class of error this system exists to prevent.",
+      "obligations": [
+        {
+          "key": "welfare_fund_contribution",
+          "summary": "Employer and employee contributions to the state labour welfare fund are payable on the state's own cycle, which is separate from provident fund and state insurance and is not covered by them.",
+          "lane": "AMBER"
+        }
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    },
+    {
+      "id": "KL-KSWIFT",
+      "title": "K-SWIFT — Kerala Single Window Interface for Fast and Transparent Clearance",
+      "domain": "business_registration",
+      "authority": "Kerala State Industrial Development Corporation / Industries Department, Government of Kerala",
+      "citation_url": "https://kswift.kerala.gov.in",
+      "applies_when": [
+        "establishes_industrial_unit",
+        "has_workplace_in_state",
+        "carries_on_profession_in_state"
+      ],
+      "obligations": [
+        {
+          "key": "single_window_application",
+          "summary": "State clearances for an industrial or commercial unit are applied for through the state single-window portal rather than department by department.",
+          "lane": "GREEN"
+        },
+        {
+          "key": "acknowledgement_then_compliance",
+          "summary": "Kerala operates a scheme under which an acknowledgement permits operations to begin while statutory clearances are obtained within a defined window. Starting on the acknowledgement is not the same as holding the clearances, and the window is a hard deadline.",
+          "lane": "AMBER"
+        }
+      ],
+      "penalty_schedule": null,
+      "penalty_status": "NOT_VERIFIED"
+    }
+  ],
+  "state_level_absences": [
+    {
+      "topic": "standalone_profession_tax_act",
+      "assertion": "Kerala does not appear to have a dedicated state profession-tax Act of the kind Telangana, Andhra Pradesh, Karnataka and Maharashtra each have. The levy runs through local self-government institutions instead — see KL-PT-LOCAL.",
+      "verification_status": "SEED_UNVERIFIED",
+      "instruction": "Do not present this absence as settled to a user until a reviewer has confirmed it. An absence is a claim like any other, and this one is load-bearing: it is why the profession-tax instrument here names a local body rather than a state department."
+    }
+  ],
+  "state_escalation_triggers": [
+    "Assuming a Kerala profession-tax obligation looks like Karnataka's or Tamil Nadu's. It does not — the assessing body is the municipality or panchayat for your address, and the cycle is half-yearly rather than monthly.",
+    "Moving an office between local bodies within Kerala. That can change which authority assesses profession tax, even though the state has not changed.",
+    "Beginning operations on a single-window acknowledgement and treating it as the clearance itself. The compliance window that follows is a deadline, not a formality.",
+    "Deploying employees across Kerala and another state under one payroll — welfare fund, profession tax and shops-and-establishments registration do not travel across the border."
+  ]
+}

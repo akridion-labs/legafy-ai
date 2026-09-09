@@ -33,7 +33,7 @@ the fallback if the tunnel is down.
 git clone <repo-url> legafy-ai && cd legafy-ai
 python3 --version          # 3.11 to 3.14 all work
 make install
-make test                  # expect 161 passed
+make test                  # expect 166 passed
 ```
 
 If `make install` fails on a wheel, stop and report it — that means a pinned
@@ -203,10 +203,21 @@ portals. Telangana instruments must not appear under Andhra Pradesh.
 
 Then:
 
-> **Ask:** "And for Kerala?"
+> **Ask:** "And for Tamil Nadu?"
 
-**Pass:** a **refusal**, naming the states that are supported. Kerala is not
+**Pass:** a **refusal**, naming the states that are supported. Tamil Nadu is not
 mapped yet, and Legafy will not approximate it with a neighbour.
+
+Then, to see the point of mapping a state properly:
+
+> **Ask:** "And for Kerala? Tell me specifically how profession tax there is
+> different from Karnataka."
+
+**Pass:** Kerala answers, and the profession-tax duty names a **municipality or
+grama panchayat** — not a state department — on a **half-yearly** cycle. That
+divergence is real, and a file built by copying Karnataka would have invented a
+"Kerala Profession Tax Act" that does not exist. See
+`docs/ADDING_A_JURISDICTION.md`.
 
 ### T5 — the refusal is the feature (especially from Canada)
 
@@ -339,9 +350,9 @@ itself a useful test of the audit trail.
 
 ### 5.1 The jurisdiction refusal is correct behaviour
 
-Legafy maps six Indian code paths today: Telangana, Andhra Pradesh,
-Maharashtra, Karnataka, Delhi and the union framework. Everything else —
-Kerala, Ontario, California — is refused with the supported list.
+Legafy maps seven Indian code paths today: Telangana, Andhra Pradesh,
+Maharashtra, Karnataka, Kerala, Delhi and the union framework. Everything else —
+Tamil Nadu, Gujarat, Ontario, California — is refused with the supported list.
 
 That refusal *is* the product. Every other tool will happily answer about
 Ontario from training data. Legafy will not approximate one jurisdiction with
@@ -415,7 +426,7 @@ Date:
 T1  tools listed (7)                    PASS / FAIL    notes:
 T2  normal screen, no section numbers   PASS / FAIL    notes:
 T3  escrow -> RED, no drafting          PASS / FAIL    notes:
-T4  AP differs from TG; Kerala refused  PASS / FAIL    notes:
+T4  AP differs from TG; TN refused; KL local PT  PASS / FAIL    notes:
 T5  Ontario refused AND respected       PASS / FAIL    notes:
 T6  IP screen flags scraping + training PASS / FAIL    notes:
 T7  unknown question -> "not held"      PASS / FAIL    notes:

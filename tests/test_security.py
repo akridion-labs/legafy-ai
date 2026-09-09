@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import stat
 
 import pytest
@@ -695,3 +696,110 @@ def test_court_sources_are_watched_and_officially_hosted():
     # is the one that interprets that state's rules.
     watched = {s["jurisdiction"] for s in courts}
     assert {"IN-TG", "IN-AP", "IN-MH", "IN-KA", "IN-DL"} <= watched
+
+
+# --- Adding a jurisdiction without assumption --------------------------------
+def test_the_matrix_itself_is_structurally_clean():
+    from app.sources.validation import audit_jurisdictions
+
+    errors = [f for f in audit_jurisdictions() if f.severity == "ERROR"]
+    assert not errors, "\n".join(f"{f.code}: {f.url} — {f.detail}" for f in errors)
+
+
+def test_copy_pasted_state_file_is_caught(tmp_path, monkeypatch):
+    """The cheapest way to add a state is to duplicate a neighbour's file. The
+    tell is a foreign instrument prefix, and it must be an ERROR — a state that
+    looks populated and is wrong is worse than one honestly absent."""
+    import app.sources.validation as v
+
+    (tmp_path / "IN-XX.json").write_text(json.dumps({
+        "code": "IN-XX", "display_name": "Copyland", "aliases": ["copyland"],
+        "isolation_group": "IN-XX", "verification_status": "SEED_UNVERIFIED",
+        "verification_note": "n", "source_whitelist": ["https://x.gov.in"],
+        "state_escalation_triggers": ["t"],
+        "instruments": [{
+            "id": "TG-SE-1988", "title": "Telangana Shops and Establishments Act, 1988",
+            "domain": "labour", "citation_url": "https://x.gov.in",
+            "obligations": [{"key": "k", "summary": "s", "lane": "GREEN"}],
+            "penalty_schedule": None, "penalty_status": "NOT_VERIFIED",
+        }],
+    }))
+    monkeypatch.setattr(v, "JURISDICTION_DIR", tmp_path)
+    codes = {f.code for f in v.audit_jurisdictions() if f.severity == "ERROR"}
+    assert "foreign_instrument_id" in codes
+
+
+def test_two_states_cannot_claim_the_same_alias(tmp_path, monkeypatch):
+    """An alias owned by two states means one silently answers for the other."""
+    import app.sources.validation as v
+
+    def state(code, alias, prefix):
+        return json.dumps({
+            "code": code, "display_name": code, "aliases": [alias],
+            "isolation_group": code, "verification_status": "SEED_UNVERIFIED",
+            "verification_note": "n", "source_whitelist": ["https://x.gov.in"],
+            "state_escalation_triggers": ["t"],
+            "instruments": [{
+                "id": f"{prefix}-A-1", "title": "T", "domain": "labour",
+                "citation_url": "https://x.gov.in",
+                "obligations": [{"key": "k", "summary": "s", "lane": "GREEN"}],
+                "penalty_schedule": None, "penalty_status": "NOT_VERIFIED",
+            }],
+        })
+
+    (tmp_path / "IN-AA.json").write_text(state("IN-AA", "southcity", "AA"))
+    (tmp_path / "IN-BB.json").write_text(state("IN-BB", "southcity", "BB"))
+    monkeypatch.setattr(v, "JURISDICTION_DIR", tmp_path)
+    assert "alias_collision" in {f.code for f in v.audit_jurisdictions() if f.severity == "ERROR"}
+
+
+def test_a_section_number_or_amount_in_a_summary_is_an_error(tmp_path, monkeypatch):
+    import app.sources.validation as v
+
+    (tmp_path / "IN-ZZ.json").write_text(json.dumps({
+        "code": "IN-ZZ", "display_name": "Z", "aliases": ["zed"],
+        "isolation_group": "IN-ZZ", "verification_status": "SEED_UNVERIFIED",
+        "verification_note": "n", "source_whitelist": ["https://x.gov.in"],
+        "state_escalation_triggers": ["t"],
+        "instruments": [{
+            "id": "ZZ-A-1", "title": "T", "domain": "labour",
+            "citation_url": "https://x.gov.in", "penalty_schedule": None,
+            "penalty_status": "NOT_VERIFIED",
+            "obligations": [
+                {"key": "a", "summary": "Register under Section 12 of the Act.", "lane": "GREEN"},
+                {"key": "b", "summary": "A fine of Rs. 50,000 applies.", "lane": "AMBER"},
+            ],
+        }],
+    }))
+    monkeypatch.setattr(v, "JURISDICTION_DIR", tmp_path)
+    codes = {f.code for f in v.audit_jurisdictions() if f.severity == "ERROR"}
+    assert {"section_number_in_summary", "penalty_amount_in_summary"} <= codes
+
+
+def test_kerala_resolves_and_is_isolated():
+    from app.compliance.registry import JURISDICTION_REGISTRY
+
+    JURISDICTION_REGISTRY.load()
+    for alias in ("Kerala", "kochi", "Trivandrum", "ernakulam", "KL"):
+        assert JURISDICTION_REGISTRY.resolve(alias).code == "IN-KL"
+
+    kerala = JURISDICTION_REGISTRY.resolve("Kerala")
+    assert all(i["id"].startswith("KL-") for i in kerala.instruments)
+    # Kerala's profession tax sits with LOCAL BODIES, not a state act. Copying a
+    # neighbour would have invented a "Kerala Profession Tax Act".
+    pt = [i for i in kerala.instruments if i["id"] == "KL-PT-LOCAL"]
+    assert pt and "Municipality" in pt[0]["title"] and "Panchayat" in pt[0]["title"]
+    assert kerala.declared_absences, "the absence of a standalone PT act must be declared"
+
+
+def test_a_disputed_title_year_is_omitted_not_guessed():
+    """Sources disagree on the Kerala welfare fund Act's year. Picking one and
+    being confidently wrong is the failure; omitting it and saying so is not."""
+    from app.compliance.registry import JURISDICTION_REGISTRY
+
+    JURISDICTION_REGISTRY.load()
+    lwf = next(
+        i for i in JURISDICTION_REGISTRY.resolve("Kerala").instruments if i["id"] == "KL-LWF"
+    )
+    assert not re.search(r"\b(19|20)\d{2}\b", lwf["title"]), lwf["title"]
+    assert "disagree" in lwf["commencement_note"].lower()
