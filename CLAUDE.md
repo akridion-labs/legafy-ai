@@ -64,6 +64,13 @@ make up / down    # docker compose stack (api + cloudflared [+ redis])
 9. **Tool schemas ship inlined.** No `$defs`/`$ref` — several function-calling
    runtimes ignore them, and the failure mode is an enum silently accepting
    any string.
+9a. **Every tool declares a `title` and its annotations.** Anthropic's directory
+   requires it, and an unannotated tool reads as potentially destructive to a
+   planner — which suppresses the grounding call the product depends on.
+   `destructiveHint` is false everywhere: nothing here deletes or overwrites.
+   No `outputSchema` — the failure branch returns a different shape on purpose,
+   and a declared schema would turn "do not answer from memory" into a protocol
+   error. See `docs/MCP_BUILDER_AUDIT.md`.
 
 10. **The citation is the product.** Legafy never states a rule, it points at the
     official page. A citation must be https, on a government host, on the

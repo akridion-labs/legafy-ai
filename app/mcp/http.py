@@ -45,6 +45,30 @@ log = logging.getLogger("legafy.mcp.http")
 CHALLENGE = 'Bearer realm="legafy", error="invalid_token"'
 
 
+def allowed_origins() -> set[str]:
+    raw = os.getenv("LEGAFY_MCP_ALLOWED_ORIGINS", "")
+    return {o.strip().rstrip("/") for o in raw.split(",") if o.strip()}
+
+
+def _origin_refused(scope: Scope) -> str | None:
+    """DNS-rebinding guard. Returns the offending Origin, or None to proceed.
+
+    No MCP client sends `Origin` — Claude Desktop, Claude Code and the hosted
+    connectors all call this server-side. A browser always does. So an `Origin`
+    on this endpoint means a web page is driving it, and on a machine that is
+    also on the tailnet that page may not be one of ours: a malicious site can
+    resolve its own name to 127.0.0.1 (or to 100.x) and POST here with the
+    victim's network position. Absent header -> allow. Present and not
+    allowlisted -> refuse, before authentication and before any handler runs.
+    """
+    for key, value in scope.get("headers", []):
+        if key == b"origin":
+            origin = value.decode("latin-1").strip().rstrip("/")
+            if origin and origin not in allowed_origins():
+                return origin
+    return None
+
+
 def url_tokens_enabled() -> bool:
     return os.getenv("LEGAFY_MCP_URL_TOKENS", "").strip().lower() in {"1", "true", "yes", "on"}
 
@@ -101,6 +125,21 @@ class MCPHttp:
             response = JSONResponse(
                 {"error": "unavailable", "message": "MCP transport is not running."},
                 status_code=503,
+            )
+            await response(scope, receive, send)
+            return
+        refused = _origin_refused(scope)
+        if refused is not None:
+            log.warning("MCP transport refused cross-origin request from %r", refused)
+            response = JSONResponse(
+                {
+                    "error": "forbidden_origin",
+                    "message": (
+                        "This endpoint does not serve browser origins. If a first-party web "
+                        "client genuinely needs it, add the origin to LEGAFY_MCP_ALLOWED_ORIGINS."
+                    ),
+                },
+                status_code=403,
             )
             await response(scope, receive, send)
             return

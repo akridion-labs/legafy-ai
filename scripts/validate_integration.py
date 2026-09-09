@@ -221,6 +221,20 @@ def validate_tools() -> None:
                 "fine over MCP; some function-calling runtimes need it inlined",
             )
         check(bool(spec.required_scope), f"tool '{name}' declares a required scope")
+        # Annotations are hints, never a boundary — but a missing one makes a
+        # read-only tool look risky to a planner, which suppresses exactly the
+        # grounding call the whole product depends on.
+        annotations = spec.annotations()
+        check(
+            {"readOnlyHint", "destructiveHint", "idempotentHint", "openWorldHint"}
+            <= set(annotations),
+            f"tool '{name}' publishes MCP annotations",
+        )
+        check(
+            not (spec.read_only and spec.destructive),
+            f"tool '{name}' annotations are self-consistent",
+            "a read-only tool cannot be destructive",
+        )
 
 
 # --------------------------------------------------------------------------

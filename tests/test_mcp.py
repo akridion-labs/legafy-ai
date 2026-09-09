@@ -107,3 +107,76 @@ async def test_mcp_dispatch_enforces_tool_scope():
             )
     finally:
         CURRENT_TENANT.reset(token)
+
+
+# -- mcp-builder audit: annotations, structured content, origin guard ---------
+
+
+def test_only_the_drafting_tool_is_not_read_only():
+    writers = {t.name for t in TOOLS if not t.read_only}
+    assert writers == {"generate_legal_structure"}
+    # A "destructive" legal tool would be a design error: nothing here deletes
+    # or overwrites, and a client must never be told otherwise.
+    assert not any(t.destructive for t in TOOLS)
+
+
+def test_open_world_is_claimed_only_where_the_call_leaves_the_box():
+    remote = {t.name for t in TOOLS if t.open_world}
+    assert remote == {
+        "generate_legal_structure",  # drafting provider may be remote
+        "verify_registration",  # government API
+        "verify_source_health",  # check_live fetches source URLs
+    }
+
+
+def test_annotations_reach_the_mcp_tool_list():
+    pytest.importorskip("mcp")
+    import asyncio
+
+    from mcp.types import ListToolsRequest
+
+    from app.mcp.server import build_server
+
+    server = build_server()
+    handler = server.request_handlers[ListToolsRequest]
+    result = asyncio.run(handler(ListToolsRequest(method="tools/list"))).root
+    by_name = {t.name: t for t in result.tools}
+    assert by_name["execute_regional_compliance_audit"].annotations.readOnlyHint is True
+    assert by_name["generate_legal_structure"].annotations.readOnlyHint is False
+    assert by_name["execute_regional_compliance_audit"].title == "Regional Compliance Audit"
+
+
+def test_tool_call_returns_structured_content_and_text():
+    pytest.importorskip("mcp")
+    import asyncio
+
+    from mcp.types import CallToolRequest, CallToolRequestParams
+
+    from app.mcp.server import build_server
+
+    server = build_server()
+    handler = server.request_handlers[CallToolRequest]
+    request = CallToolRequest(
+        method="tools/call",
+        params=CallToolRequestParams(name="list_supported_jurisdictions", arguments={}),
+    )
+    result = asyncio.run(handler(request)).root
+    assert result.content and result.content[0].type == "text"
+    # The whole point: a client can read the verdict without parsing prose.
+    assert isinstance(result.structuredContent, dict)
+    assert "jurisdictions" in result.structuredContent
+
+
+def test_browser_origins_are_refused_before_authentication(monkeypatch):
+    """A page that can reach the tunnel or the tailnet must not drive the tools."""
+    from app.mcp.http import _origin_refused, allowed_origins
+
+    monkeypatch.delenv("LEGAFY_MCP_ALLOWED_ORIGINS", raising=False)
+    assert allowed_origins() == set()
+    assert _origin_refused({"headers": []}) is None  # no Origin: a real MCP client
+    assert _origin_refused({"headers": [(b"origin", b"https://evil.example")]}) == (
+        "https://evil.example"
+    )
+
+    monkeypatch.setenv("LEGAFY_MCP_ALLOWED_ORIGINS", "https://console.akridion.com/")
+    assert _origin_refused({"headers": [(b"origin", b"https://console.akridion.com")]}) is None

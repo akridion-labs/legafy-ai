@@ -458,9 +458,14 @@ class VerifyRegistrationRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
+    # Defaulted, not required: the tool's own description tells a caller to
+    # invoke it with no identifier to discover which checks exist, and a
+    # required `check` made that documented call fail schema validation before
+    # the handler ever ran. Discovery must not need the answer it discovers.
     check: str = Field(
+        default="",
         description="Which check to run, e.g. 'gstin', 'udyam', 'pan', 'cin'. "
-        "Call with an empty identifier to list what is available and enabled."
+        "Call with no arguments at all to list what is available and enabled.",
     )
     identifier: str = Field(
         default="",

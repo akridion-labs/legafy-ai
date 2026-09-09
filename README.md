@@ -2,7 +2,7 @@
 
 # Legafy AI
 
-**Model-agnostic pre-counsel compliance scaffolding engine.** Akridion Labs LLP.
+**Model-agnostic pre-counsel compliance scaffolding engine.** Akridion Labs.
 
 Legafy analyses a startup concept against isolated Indian state-level regulatory
 code paths, tells you plainly when to stop and hire a lawyer, and assembles
@@ -148,7 +148,9 @@ generated/           runtime output + audit vault — gitignored, back this up
 | [Roadmap](ROADMAP.md) | Verification, municipal layer, IP screening, the corpus question |
 | [MCP & AI-platform integration](docs/MCP_INTEGRATION.md) | Claude Desktop, Claude Code, Cursor, OpenAI function calling, n8n |
 | [Deployment](docs/DEPLOYMENT.md) | generic Linux server, Docker, Cloudflare Tunnel, GitHub repo setup |
-| [Deployment — Akridion server](docs/DEPLOYMENT_AKRIDION_SERVER.md) | the real box: Win11 + WSL2 + RTX 5070, the F: drive trap, port map |
+| [Deployment — Akridion server](docs/DEPLOYMENT_AKRIDION_SERVER.md) | the real box: Win11 + WSL2 + RTX 5070, the F: drive trap, port map, why no tunnel goes on it |
+| [Distribution & revenue](docs/DISTRIBUTION_AND_REVENUE.md) | what Claude and ChatGPT actually pay (nothing), and the five lines that do |
+| [MCP builder audit](docs/MCP_BUILDER_AUDIT.md) | this server against Anthropic's MCP guidance: what was fixed, what was deliberately not |
 | [Architecture](docs/ARCHITECTURE.md) | how the guardrails fit together |
 | [Legal disclaimer](docs/LEGAL_DISCLAIMER.md) | positioning and UPL posture |
 | [CLAUDE.md](CLAUDE.md) | repo guide for Claude Code, plus the invariants |

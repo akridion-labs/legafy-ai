@@ -1,0 +1,68 @@
+<!--
+  Legafy AI — MCP server evaluation set (mcp-builder Phase 4).
+
+  Ten questions a founder or a reviewer would actually ask. Each one is
+  answerable ONLY by calling the tools; none is answerable from a model's own
+  knowledge of Indian law, which is the point. Every answer is a single short
+  string taken from the shipped data, so a run can be scored by comparison.
+
+  All ten are read-only. None mutates state, none needs a network call, and
+  none has an answer that drifts with time — they are pinned to the contents of
+  data/jurisdictions/*.json and to the invariants in CLAUDE.md, so an answer
+  changing means either the data was revised on purpose or something regressed.
+
+  Run:  python3 -m pytest tests/test_evaluation_set.py   (structure + answers)
+-->
+<evaluation>
+
+  <qa_pair>
+    <question>A founder wants to build a marketplace for local tutors in Kerala that holds each student's payment in escrow until the session finishes. Screen the concept with the activity flags that match what it actually does, including that it holds customer funds. What traffic-light lane comes back?</question>
+    <answer>RED</answer>
+  </qa_pair>
+
+  <qa_pair>
+    <question>Telangana, Andhra Pradesh, Karnataka and Maharashtra each have a dedicated state profession-tax Act. Kerala's profession tax works differently. In Legafy's Kerala grounding matrix, what is the instrument id of the entry that carries the profession-tax obligation?</question>
+    <answer>KL-PT-LOCAL</answer>
+  </qa_pair>
+
+  <qa_pair>
+    <question>Legafy compiles one instrument title without the year it is usually cited by, because public sources disagree about which year is correct. Which Kerala instrument is it? Give the title exactly as the tool returns it.</question>
+    <answer>Kerala Labour Welfare Fund Act</answer>
+  </qa_pair>
+
+  <qa_pair>
+    <question>Excluding the union catalogue, how many isolated Indian state code paths can Legafy currently ground an audit against?</question>
+    <answer>6</answer>
+  </qa_pair>
+
+  <qa_pair>
+    <question>A founder asks about opening a bakery in Goa. What does Legafy do rather than answering from the nearest mapped state?</question>
+    <answer>It raises an unknown-jurisdiction error and refuses to approximate</answer>
+  </qa_pair>
+
+  <qa_pair>
+    <question>Search the primary-source index for anything at all, then read the usage note on the result. Below which authority weight is a document treated as orientation only, and not usable to support a compliance statement?</question>
+    <answer>0.8</answer>
+  </qa_pair>
+
+  <qa_pair>
+    <question>Screen a B2B SaaS product in Telangana that stores customer personal data, and look at the court tier in the response. What settled-status does Legafy give the question of how India's data-protection obligations will be interpreted in practice?</question>
+    <answer>EVOLVING</answer>
+  </qa_pair>
+
+  <qa_pair>
+    <question>In the same court tier, what settled-status does Legafy give the question of whether a post-employment non-compete is enforceable in India?</question>
+    <answer>WELL_SETTLED</answer>
+  </qa_pair>
+
+  <qa_pair>
+    <question>Run an audit with detail set to "full" and inspect the penalty fields on the instruments returned. What value does every shipped instrument carry for penalty_status?</question>
+    <answer>NOT_VERIFIED</answer>
+  </qa_pair>
+
+  <qa_pair>
+    <question>A founder has a GSTIN and wants to know whether Legafy can check it at all before they paste the number in. Which tool do they call with an empty identifier to get the list of available checks?</question>
+    <answer>verify_registration</answer>
+  </qa_pair>
+
+</evaluation>

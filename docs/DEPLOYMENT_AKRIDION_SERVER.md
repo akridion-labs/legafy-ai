@@ -79,14 +79,15 @@ Change `LEGAFY_PORT` in `.env` if you ever need to move it.
 ## Path A — native in WSL (recommended for this box)
 
 Docker buys you isolation you do not need here, and costs you the Ollama networking
-problem. Since Ollama, Python and cloudflared all run in the same Ubuntu, running Legafy
-natively is fewer moving parts.
+problem. Ollama and Python are already in this Ubuntu; running Legafy beside them is
+fewer moving parts, and it binds loopback only — which is what the access rules below
+depend on.
 
 ```bash
 cd ~/akridion/legafy-ai
 sudo apt update && sudo apt install -y python3-venv python3-pip openssl
-make install PY=python3.12      # 3.11–3.13; see the note in README
-make test                       # 78 tests, offline
+make install                    # Python 3.11–3.14 all work (see README)
+make test                       # 181 tests, offline
 ./scripts/bootstrap.sh          # .env, telemetry salt, first ENTERPRISE token
 ```
 
@@ -179,31 +180,108 @@ Stage 7. Never F:.
 
 ---
 
-## Exposing it: Tailscale is not enough
+## Reaching it — and the rule that decides how
 
-You already have Tailscale, and it is the right tool for you and your partner reaching the
-box. **It cannot serve the connector**, because claude.ai and ChatGPT are not on your
-tailnet — they need a public HTTPS URL.
+> ⛔ **Correction to an earlier draft of this document.** It told you to put a Cloudflare
+> Tunnel on this machine and hand out `legal-mcp.akridion.com`. **Do not.** Your own
+> `EXECUTION_ORDER.md`, under *Rules that do not bend*, says:
+>
+> > Tailscale only; no public listener, router forwarding or Funnel.
+>
+> and the Phase 4 boundary adds that *"raw port 8765 and public Funnel remain prohibited."*
+> A Cloudflare Tunnel opens no router port, so it clears the letter of the rule — and
+> breaks its point exactly, because it creates a public inbound path to `AKRIDION-AI-01`,
+> which is the single thing security gate **S7** was signed on the absence of. Your S2B
+> evidence (hop 2 = `10.130.128.1`, RFC1918 — the ISP is carrier-grade NAT, so the router
+> holds no routable public address) says an inbound path **cannot exist today**. A tunnel
+> would manufacture one. That is a decision to take deliberately, in daylight, not a
+> deployment step to follow.
+>
+> Nothing below needs it.
 
-So:
+### Who needs to reach it, and how each one does
 
-- **Tailscale** — your own access, SSH, dashboards, the Vyom console. Keep as is.
-- **Cloudflare Tunnel** — the public `/mcp` endpoint the connectors dial. This is what
-  `setup_tunnel.sh` sets up, and it opens no inbound port on your router.
+| Who | Route | Public exposure |
+|---|---|---|
+| You, from the Mac, in Claude Desktop | **stdio over SSH** (§A below) | none |
+| You, from the Mac, in Claude Code | stdio over SSH, or Tailscale Serve | none |
+| Your partner in Canada | same, once he is on the tailnet | none |
+| claude.ai in a browser · ChatGPT connectors | **not this machine** — see §C | n/a |
 
-```bash
-./setup_tunnel.sh --hostname legal-mcp.akridion.com --port 8000
+### §A — Claude Desktop on the Mac, over SSH (the one that just works)
+
+Claude Desktop launches a *local* command and speaks stdio to it. Make that command an
+`ssh` into the server, and the MCP session runs on `AKRIDION-AI-01` while every packet
+stays inside the tailnet. No listener, no certificate, no tunnel, nothing to revoke but an
+SSH key.
+
+On the Mac, in `~/Library/Application Support/Claude/claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "legafy-server": {
+      "command": "/usr/bin/ssh",
+      "args": [
+        "-o", "BatchMode=yes",
+        "akridion@100.112.227.92",
+        "cd ~/akridion/legafy-ai && ./.venv/bin/python -m app.mcp.server"
+      ]
+    }
+  }
+}
 ```
 
-`cloudflared` runs as a native Linux binary in Ubuntu on Path A, so you do not need the
-tunnel container at all. On Path B the compose stack runs it for you.
-
-Then confirm from off-network:
+Prove the pipe before you involve Claude — this is the whole test:
 
 ```bash
-curl -s https://legal-mcp.akridion.com/healthz
-curl -si -X POST https://legal-mcp.akridion.com/mcp | head -3    # expect 401 + WWW-Authenticate
+# from the Mac
+ssh akridion@100.112.227.92 'cd ~/akridion/legafy-ai && ./.venv/bin/python -m app.mcp.server' <<'EOF'
+{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"probe","version":"0"}}}
+EOF
 ```
+
+A JSON line naming `legafy-ai` means the whole path works. `BatchMode=yes` matters: without
+it a passphrase prompt hangs invisibly inside Claude Desktop and looks like a broken server.
+Use a key, not a password.
+
+### §B — Tailscale Serve, when you want an HTTPS URL on the tailnet
+
+Serve is not Funnel. Serve publishes to your tailnet only; Funnel publishes to the
+internet. Your own Phase 4 boundary names *private Tailscale Serve* as the sanctioned way
+to reach a Deck session, so this is in-policy — **`tailscale funnel` is not, ever.**
+
+```bash
+# on the server, with Legafy listening on 127.0.0.1:8000
+tailscale serve --bg --https=443 http://127.0.0.1:8000
+tailscale serve status          # confirm it says tailnet-only, not Funnel
+```
+
+That gives `https://akridion-ai-01.<your-tailnet>.ts.net/mcp/` with a real certificate.
+It works from **Claude Code** on the Mac, which dials MCP endpoints from your own machine:
+
+```bash
+claude mcp add --transport http legafy-server \
+  https://akridion-ai-01.<your-tailnet>.ts.net/mcp/ \
+  --header "Authorization: Bearer <token from scripts/bootstrap.sh>"
+```
+
+It will **not** work for a connector added in claude.ai or Claude Desktop's connector
+pane: those are dialled by Anthropic's servers, which are not on your tailnet, and the
+symptom is a connector that saves and then shows no tools. That is the expected result,
+not a bug to chase — use §A for Desktop.
+
+Keep the bearer token even inside the tailnet. Anything on your tailnet can reach port 443
+on this host, and Legafy's tiering is what stops a `DEVELOPER_FREE` token from drafting.
+
+### §C — The public endpoint, when there is one, is not this box
+
+A hosted connector for customers needs a public HTTPS origin. Put it on a small VPS or a
+managed host under the Akridion Labs account, and leave `AKRIDION-AI-01` as what it is:
+the private box where the data is compiled, the vault lives and releases are verified.
+That separation is not caution for its own sake — it is what lets you keep the S7 answer
+("no inbound path to the server") true while still shipping a product. See
+`docs/DISTRIBUTION_AND_REVENUE.md`.
 
 ---
 

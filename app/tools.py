@@ -75,6 +75,16 @@ class ToolSpec:
     input_model: type[BaseModel] | None
     handler: Callable[..., Awaitable[Any]]
     required_scope: str
+    # MCP tool annotations. They are hints for the client's own planning — never
+    # a security boundary; scope is still checked in _dispatch_local. Worth
+    # setting anyway: a client that knows the audit is read-only and idempotent
+    # calls it freely, which is exactly the behaviour the grounding mandate wants.
+    read_only: bool = True
+    destructive: bool = False
+    idempotent: bool = True
+    # True only where the call actually leaves the box: a government API, or a
+    # live fetch of a source URL. The grounding matrix itself is local.
+    open_world: bool = False
 
     def json_schema(self) -> dict:
         if self.input_model is None:
@@ -88,6 +98,15 @@ class ToolSpec:
         # bytes the refs save.
         return inline_refs(self.input_model.model_json_schema())
 
+    def annotations(self) -> dict:
+        return {
+            "title": self.title,
+            "readOnlyHint": self.read_only,
+            "destructiveHint": self.destructive,
+            "idempotentHint": self.idempotent,
+            "openWorldHint": self.open_world,
+        }
+
     def manifest(self) -> dict:
         return {
             "name": self.name,
@@ -95,6 +114,7 @@ class ToolSpec:
             "description": self.description,
             "input_schema": self.json_schema(),
             "required_scope": self.required_scope,
+            "annotations": self.annotations(),
         }
 
 
@@ -153,10 +173,13 @@ async def _search_sources(payload: dict, *, request_id: str, tenant: TenantConte
         jurisdiction = analysis.jurisdictions[0]
 
     try:
+        # Ask for one more than the caller wants. If it comes back, there are
+        # further matches and `has_more` can say so honestly — without a second
+        # COUNT query, and without inventing a total the re-ranking cannot support.
         hits = store.search(
             fts_query,
             jurisdiction=jurisdiction,
-            limit=request.limit,
+            limit=request.limit + 1,
             citable_only=not request.include_non_citable,
         )
     except MalformedQuery as exc:
@@ -167,6 +190,9 @@ async def _search_sources(payload: dict, *, request_id: str, tenant: TenantConte
             "query": request.query,
             "hits": [],
         }
+
+    has_more = len(hits) > request.limit
+    hits = hits[: request.limit]
 
     # Local-first: when the index holds nothing, say so and record the gap for
     # the compliance team rather than letting the caller fill the silence.
@@ -184,8 +210,18 @@ async def _search_sources(payload: dict, *, request_id: str, tenant: TenantConte
         "analysis": analysis.as_dict() if analysis else None,
         "jurisdiction": jurisdiction,
         "hits": hits,
+        "returned": len(hits),
+        "limit": request.limit,
+        "has_more": has_more,
         "cascade": cascade,
         "index": store.stats(),
+        "pagination_note": (
+            "There is no offset cursor by design. Hits are re-ranked by authority weight after "
+            "retrieval, so page 2 of a ranked legal search is not a stable window — narrow the "
+            "query or pin a jurisdiction instead of paging."
+        )
+        if has_more
+        else None,
         "usage_note": (
             "These are pointers to primary sources, not assertions about their contents. "
             f"Only documents at or above authority weight {CITABLE_AUTHORITY_FLOOR} may support "
@@ -199,15 +235,25 @@ async def _search_sources(payload: dict, *, request_id: str, tenant: TenantConte
 async def _review_queue(payload: dict, *, request_id: str, tenant: TenantContext) -> dict:
     request = ReviewQueueRequest.model_validate(payload or {})
     store = get_store()
+    pending = store.pending_reviews(
+        limit=request.limit + 1, jurisdiction=request.jurisdiction
+    )
+    has_more = len(pending) > request.limit
+    pending = pending[: request.limit]
+    stats = store.stats()
     return {
         "success": True,
-        "pending": store.pending_reviews(
-            limit=request.limit, jurisdiction=request.jurisdiction
-        ),
+        "pending": pending,
+        "returned": len(pending),
+        "limit": request.limit,
+        "has_more": has_more,
+        # Unfiltered by jurisdiction — it is the size of the whole inbox, which is
+        # what a reviewer wants to know before deciding where to start.
+        "total_pending": stats["pending_reviews"],
         # The other half of the legal team's inbox: questions the corpus could
         # not answer at all, ordered by how many people hit the same gap.
         "coverage_gaps": backlog_report(limit=request.limit),
-        "index": store.stats(),
+        "index": stats,
         "note": (
             "Two queues. `pending` is detected change at whitelisted primary sources, ordered "
             "by review priority (authority x change magnitude x instrument coverage x recency x "
@@ -328,6 +374,12 @@ TOOLS: tuple[ToolSpec, ...] = (
         input_model=DocumentGenerationRequest,
         handler=_generate,
         required_scope="generate",
+        # The only tool that writes a file the caller can name, and two runs of
+        # the same request produce two documents. Not destructive: it creates,
+        # never overwrites. openWorld because the drafting provider may be remote.
+        read_only=False,
+        idempotent=False,
+        open_world=True,
     ),
     ToolSpec(
         name="search_legal_sources",
@@ -352,6 +404,7 @@ TOOLS: tuple[ToolSpec, ...] = (
         input_model=VerifyRegistrationRequest,
         handler=_verify_registration,
         required_scope="audit",
+        open_world=True,  # calls a government endpoint
     ),
     ToolSpec(
         name="verify_source_health",
@@ -360,6 +413,7 @@ TOOLS: tuple[ToolSpec, ...] = (
         input_model=SourceHealthRequest,
         handler=_source_health,
         required_scope="audit",
+        open_world=True,  # check_live fetches each source URL
     ),
     ToolSpec(
         name="list_supported_jurisdictions",

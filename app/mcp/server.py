@@ -102,7 +102,7 @@ async def _dispatch_remote(name: str, payload: dict) -> dict:
 def build_server():
     try:
         from mcp.server import Server
-        from mcp.types import TextContent, Tool
+        from mcp.types import TextContent, Tool, ToolAnnotations
     except ImportError as exc:  # pragma: no cover
         raise SystemExit(
             "The MCP SDK is not installed. Run: pip install 'mcp>=1.2.0'"
@@ -119,12 +119,18 @@ def build_server():
     @server.list_tools()
     async def list_tools() -> list[Tool]:
         return [
-            Tool(name=t.name, description=t.description, inputSchema=t.json_schema())
+            Tool(
+                name=t.name,
+                title=t.title,
+                description=t.description,
+                inputSchema=t.json_schema(),
+                annotations=ToolAnnotations(**t.annotations()),
+            )
             for t in TOOLS
         ]
 
     @server.call_tool()
-    async def call_tool(name: str, arguments: dict) -> list[TextContent]:
+    async def call_tool(name: str, arguments: dict) -> tuple[list[TextContent], dict]:
         if name not in TOOLS_BY_NAME:
             raise ValueError(f"Unknown tool {name!r}")
         try:
@@ -141,7 +147,20 @@ def build_server():
                     "unavailable and that counsel should be consulted."
                 ),
             }
-        return [TextContent(type="text", text=json.dumps(result, indent=2, default=str))]
+        # Both halves: the text block every client can read, and structuredContent
+        # so a client can gate on `traffic_light.lane` without parsing prose. The
+        # tuple form is used rather than returning the dict alone because the SDK
+        # would then serialise it with a plain json.dumps and raise on any stray
+        # date; `default=str` here keeps a serialisation quirk from becoming a
+        # protocol error on a legal grounding call.
+        #
+        # No `outputSchema` is declared, deliberately. The SDK hard-fails a call
+        # whose structuredContent does not validate, and the failure branch above
+        # returns a different shape on purpose — the one that tells the model NOT
+        # to answer from memory. Declaring a schema would convert a graceful
+        # degradation into a protocol error, which is exactly backwards here.
+        text = [TextContent(type="text", text=json.dumps(result, indent=2, default=str))]
+        return text, result
 
     return server
 
