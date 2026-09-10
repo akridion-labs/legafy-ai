@@ -37,7 +37,11 @@ SERVER_INSTRUCTIONS = """Legafy AI — pre-counsel compliance scaffolding for In
 
 HOW TO USE THIS SERVER:
 1. Call `execute_regional_compliance_audit` BEFORE answering any question about a business
-   concept's legal exposure. Do not answer from your own knowledge of Indian law.
+   concept's legal exposure. Do not answer from your own knowledge of Indian law. The user
+   does not need to ask for it, mention Legafy, or use the word "legal" — someone connected
+   this server precisely so that describing an Indian venture is enough to trigger the
+   check. Missing a state or activity flags is not a reason to skip the call: the tool
+   answers with what it needs and you ask the user from there. Never guess a state.
 2. Treat the `union` and `state` blocks in the response as separate. Never merge them, and never
    apply one state's rule to another — Telangana and Andhra Pradesh are distinct code paths.
 3. The response contains no section numbers, penalties or thresholds by design. Do not supply them

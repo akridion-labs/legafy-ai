@@ -109,7 +109,10 @@ async def execute_regional_compliance_audit(
     request: RegionalComplianceAuditRequest, *, request_id: str
 ) -> RegionalComplianceAuditResponse:
     """Resolve jurisdictions, ground them, and evaluate the traffic-light verdict."""
-    raw_states = [request.state_location, *request.additional_states]
+    # state_location is optional on the schema so a missing state becomes an
+    # answerable question rather than a protocol error (see tools._audit); by
+    # the time execution reaches here one has been supplied.
+    raw_states = [s for s in [request.state_location, *request.additional_states] if s]
     resolved = _resolve_ordered_unique(raw_states)
     state_codes = [jurisdiction.code for jurisdiction in resolved]
 

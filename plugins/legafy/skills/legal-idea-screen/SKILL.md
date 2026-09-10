@@ -2,12 +2,17 @@
 name: legal-idea-screen
 description: >
   Screen a startup or product idea for Indian regulatory exposure before building it.
-  Use when someone describes a business concept and asks what it takes to launch legally,
-  what licences or registrations apply, whether they can handle payments or user data a
-  certain way, which state to incorporate or hire in, or whether an idea is risky. Also
-  use before drafting any founders agreement, employment contract, NDA or privacy policy
-  for an Indian entity. Triggers on "is this legal", "what licences do I need", "can we
-  hold customer funds", "DPDP", "compliance", "which state", "before I build this".
+  Use whenever someone DESCRIBES a venture they intend to run in India — even when they
+  ask nothing about law. "Here's my idea", "I want to build X", "would this work as a
+  business", "what do I need to launch", "review my startup plan" and "what am I missing"
+  are all triggers on their own. Also use when they do ask directly: what it takes to
+  launch legally, what licences or registrations apply, whether they can handle payments
+  or user data a certain way, which state to incorporate or hire in, whether an idea is
+  risky, or when the facts change mid-conversation (a new state, holding money, hiring,
+  personal data). Also use before drafting any founders agreement, employment contract,
+  NDA or privacy policy for an Indian entity. Triggers on "is this legal", "what licences
+  do I need", "can we hold customer funds", "DPDP", "compliance", "which state",
+  "before I build this".
 ---
 
 # Legal idea screen (Legafy AI)
@@ -24,16 +29,24 @@ money.
 
 ## How to run a screen
 
-1. **Get the state.** Obligations attach to a state, not to "India". If the user has not
-   named one, ask before calling — do not default. Multiple locations means multiple
+1. **Call first, complete the picture second.** You do not need every field to start.
+   If the user has not named a state, leave `state_location` out — the tool answers
+   `JURISDICTION_REQUIRED` with the states it supports, and you ask a closed question
+   instead of an open one. Never default to a state, and never infer one from their
+   language, their timezone or the names in their idea. Multiple locations means multiple
    states, each passed separately.
 2. **Declare the behaviour, not the label.** `activity_flags` drive the whole assessment.
    "Fintech" tells the tool nothing; `holds_customer_funds`, `operates_escrow`,
-   `processes_health_data`, `cross_border_data_transfer` tell it everything. Read the
-   user's description and set every flag that genuinely applies. Under-declaring produces
-   a falsely clean result — the tool will flag the assessment as under-specified, and you
-   should say so out loud.
-3. **Call the tool.** Then read the response as data, not as prose to paraphrase.
+   `processes_health_data`, `cross_border_data_transfer` tell it everything. Set every
+   flag that genuinely applies, and leave the rest empty rather than guessing — the
+   response comes back broad, marks itself under-specified, and returns
+   `suggested_activity_flags` naming the flags the wording implies and the phrase that
+   implied each one.
+3. **Confirm the suggestions in plain language, then call again.** "You'll be holding
+   student money until the session finishes, and hiring tutors as staff — right?" is the
+   whole step. Their yes turns an inference into a declaration, and the second call is
+   the sharp one. Say out loud that the first pass was broad.
+4. **Read the response as data, not as prose to paraphrase.**
 
 ## How to read the response
 

@@ -621,3 +621,39 @@ class TrafficLightMatrix:
 
 
 TRAFFIC_LIGHT = TrafficLightMatrix()
+
+
+def suggest_activity_flags(
+    business_concept: str, industry_vertical: str = "", *, declared: set[str] | None = None
+) -> list[dict[str, object]]:
+    """Which activity flags the wording implies but the caller has not declared.
+
+    The keyword scan that raises advisory risk signals already knows which
+    vectors a description touches, and every vector names the declared flags
+    that authoritatively trigger it. That mapping was previously used in one
+    direction only. Running it the other way turns free text back into the
+    vocabulary the grounding matrix filters on, which is what a caller needs
+    to make its *second* call sharp.
+
+    This is a suggestion channel and nothing more. It never sets a flag, never
+    filters an obligation and never moves a lane — an undeclared duty is shown,
+    not hidden, so a wrong guess here costs noise rather than a missed filing.
+    """
+    already = declared or set()
+    scan_text = f"{business_concept or ''} {industry_vertical or ''}"
+    found: dict[str, list[str]] = {}
+    for vector in ALL_RISK_VECTORS:
+        matched = _matched_keywords(vector, scan_text)
+        if not matched:
+            continue
+        for flag in vector.flags:
+            if flag in already:
+                continue
+            found.setdefault(flag, [])
+            for phrase in matched:
+                if phrase not in found[flag]:
+                    found[flag].append(phrase)
+    return [
+        {"flag": flag, "matched_on": phrases}
+        for flag, phrases in sorted(found.items())
+    ]

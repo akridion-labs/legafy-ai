@@ -180,3 +180,127 @@ def test_browser_origins_are_refused_before_authentication(monkeypatch):
 
     monkeypatch.setenv("LEGAFY_MCP_ALLOWED_ORIGINS", "https://console.akridion.com/")
     assert _origin_refused({"headers": [(b"origin", b"https://console.akridion.com")]}) is None
+
+
+# -- automatic invocation: the connector must fire without being asked -------
+
+
+def test_the_audit_description_tells_the_model_to_call_it_unprompted():
+    """The trigger clause is the whole mechanism on the bare-connector path.
+
+    A user who adds Legafy as a connector (rather than installing the plugin)
+    gets no skill — only this description and the server instructions. If the
+    trigger language is trimmed, the model waits to be asked, and a founder who
+    types "here's my idea" gets an ungrounded answer.
+    """
+    description = TOOLS_BY_NAME["execute_regional_compliance_audit"].description
+    lowered = description.lower()
+    for phrase in ("unprompted", "without being asked", "here's my idea", "call it anyway"):
+        assert phrase in lowered, f"lost the trigger phrase: {phrase!r}"
+    # And it must say that missing inputs are not an excuse to skip the call.
+    assert "not a reason to skip" in description
+
+
+def test_server_instructions_say_the_user_need_not_ask():
+    from app.mcp.server import SERVER_INSTRUCTIONS
+
+    assert "does not need to ask for it" in SERVER_INSTRUCTIONS
+    assert "Never guess a state" in SERVER_INSTRUCTIONS
+
+
+def test_a_missing_state_is_a_question_not_a_protocol_error():
+    """The single biggest hole in automatic grounding, closed.
+
+    When `state_location` was a required property the SDK rejected the call
+    against inputSchema before any handler ran. The model got
+    "Input validation error: 'state_location' is a required property" and
+    nothing else — no instruction, no supported states, no hint that it must
+    not improvise. The realistic next move is to guess a state or answer from
+    memory. Both are the failure this engine exists to prevent.
+    """
+    pytest.importorskip("mcp")
+    import asyncio
+
+    from mcp.types import CallToolRequest, CallToolRequestParams
+
+    from app.mcp.server import build_server
+
+    server = build_server()
+    handler = server.request_handlers[CallToolRequest]
+    result = asyncio.run(
+        handler(
+            CallToolRequest(
+                method="tools/call",
+                params=CallToolRequestParams(
+                    name="execute_regional_compliance_audit",
+                    arguments={
+                        "business_concept": "A marketplace for tutors holding fees in escrow.",
+                        "industry_vertical": "Marketplace",
+                    },
+                ),
+            )
+        )
+    ).root
+
+    assert result.isError is False, "a missing state must not surface as a broken tool"
+    payload = result.structuredContent
+    assert payload["status"] == "JURISDICTION_REQUIRED"
+    assert payload["supported_states"], "the model needs the list to ask a closed question"
+    assert "ASK THE USER" in payload["instruction"]
+    assert "do NOT answer the legal question from your own knowledge" in payload["instruction"]
+    # The union catalogue is not a state a user can pick.
+    assert "IN-CENTRAL" not in {s["code"] for s in payload["supported_states"]}
+
+
+def test_wording_is_mapped_back_to_the_flags_the_matrix_filters_on():
+    from app.compliance.traffic_light import suggest_activity_flags
+
+    suggested = suggest_activity_flags(
+        "A marketplace for local tutors that holds student payments in escrow.",
+        "Marketplace",
+    )
+    by_flag = {s["flag"]: s["matched_on"] for s in suggested}
+    assert "holds_customer_funds" in by_flag
+    assert "escrow" in by_flag["holds_customer_funds"]
+
+    # A flag the caller already declared is not suggested back at them.
+    again = suggest_activity_flags(
+        "A marketplace for local tutors that holds student payments in escrow.",
+        "Marketplace",
+        declared={"holds_customer_funds"},
+    )
+    assert "holds_customer_funds" not in {s["flag"] for s in again}
+
+
+def test_suggestions_never_narrow_the_assessment():
+    """Suggestion only. An inferred flag must not filter a duty out of sight.
+
+    Getting a suggestion wrong should cost noise, never a missed obligation —
+    so the undeclared call must return at least as many duties as the declared
+    one, not fewer.
+    """
+    import asyncio
+
+    from app.mcp.server import LOCAL_TENANT
+
+    concept = "A marketplace for local tutors that holds student payments in escrow."
+
+    def audit(flags):
+        return asyncio.run(
+            TOOLS_BY_NAME["execute_regional_compliance_audit"].handler(
+                {
+                    "business_concept": concept,
+                    "industry_vertical": "Marketplace",
+                    "state_location": "Kerala",
+                    "activity_flags": flags,
+                },
+                request_id="t",
+                tenant=LOCAL_TENANT,
+            )
+        )
+
+    undeclared = audit([])
+    declared = audit(["holds_customer_funds"])
+    assert len(undeclared["obligations"]) >= len(declared["obligations"])
+    assert undeclared["lane"] == "RED"  # inferred from the wording, with no flag declared
+    assert "suggested_activity_flags" in undeclared

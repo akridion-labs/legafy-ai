@@ -166,11 +166,22 @@ class RegionalComplianceAuditRequest(BaseModel):
         max_length=120,
         description="e.g. 'B2B SaaS', 'healthtech', 'marketplace', 'lending'.",
     )
-    state_location: str = Field(
+    # Optional at the schema level, mandatory in substance. A required field
+    # here made a missing state a *protocol* error — the SDK rejects the call
+    # against inputSchema before any handler runs, so the model gets
+    # "Input validation error" and none of the instruction not to improvise.
+    # It then guesses a state or answers from memory, which is the exact
+    # failure this engine exists to prevent. Absent, the tool now answers with
+    # JURISDICTION_REQUIRED and the list of states to choose from.
+    state_location: str | None = Field(
+        default=None,
         description=(
             "Indian state whose code path applies, e.g. 'Telangana', 'Andhra Pradesh', "
-            "'Maharashtra'. Unmapped states are refused rather than approximated."
-        )
+            "'Maharashtra'. A major city resolves too ('Bangalore', 'Kochi'). Unmapped "
+            "states are refused rather than approximated. If the user has not said where "
+            "they will operate, CALL ANYWAY AND LEAVE THIS OUT — the tool replies with the "
+            "supported states so you can ask. Never guess one."
+        ),
     )
     entity_type: EntityType = EntityType.UNDECIDED
     activity_flags: list[ActivityFlag] = Field(

@@ -17,6 +17,7 @@ from pydantic import BaseModel
 from app.compact import compact_audit
 from app.compliance.audit import LEGAFY_DISCLAIMER
 from app.compliance.registry import JURISDICTION_REGISTRY
+from app.compliance.traffic_light import suggest_activity_flags
 from app.localisation import supported_languages, translate_payload
 from app.models.schemas import (
     DocumentGenerationRequest,
@@ -118,8 +119,44 @@ class ToolSpec:
         }
 
 
+def _jurisdiction_required() -> dict:
+    """The answer when the caller has no state yet — a question, not an error.
+
+    Returned as a normal successful tool result on purpose. An error result
+    reads to a model as "this tool is broken", and its next move is to answer
+    from its own memory of Indian law. A well-formed reply that names the
+    missing input keeps the conversation inside the grounding path.
+    """
+    states = [
+        {"code": j["code"], "name": j["display_name"]}
+        for j in JURISDICTION_REGISTRY.all_summaries()
+        if j.get("tier") != "union"
+    ]
+    return {
+        "success": False,
+        "status": "JURISDICTION_REQUIRED",
+        "message": (
+            "No state was given. Indian compliance is state-isolated: the same idea "
+            "produces different duties, authorities and payment cycles in each state, "
+            "so there is no all-India answer to return."
+        ),
+        "supported_states": states,
+        "instruction": (
+            "ASK THE USER which state they will operate in, then call this tool again "
+            "with `state_location` set. Do NOT infer a state from the user's language, "
+            "accent, timezone or the names in their idea, and do NOT answer the legal "
+            "question from your own knowledge in the meantime. A major city works too "
+            "('Bangalore', 'Kochi'). If their state is not in the list above, say Legafy "
+            "does not cover it yet rather than using the closest one."
+        ),
+        "disclaimer": LEGAFY_DISCLAIMER,
+    }
+
+
 async def _audit(payload: dict, *, request_id: str, tenant: TenantContext) -> dict:
     request = RegionalComplianceAuditRequest.model_validate(payload)
+    if not (request.state_location or "").strip():
+        return _jurisdiction_required()
     result = (await run_audit(request, request_id=request_id, tenant=tenant)).model_dump(mode="json")
 
     if request.contribute_to_corpus:
@@ -136,6 +173,29 @@ async def _audit(payload: dict, *, request_id: str, tenant: TenantContext) -> di
 
     if request.detail == "compact":
         result = compact_audit(result, request.sections)
+
+    # Free text back into the engine's own vocabulary. The first call usually
+    # arrives with no flags at all — the model has an idea, not a questionnaire
+    # — and an undeclared activity is not assessed. Naming the flags the wording
+    # implies gives the model something concrete to confirm with the user and a
+    # sharper second call to make. Added after compaction so the compact path,
+    # which is the default and the one an auto-invoked call takes, keeps it.
+    suggested = suggest_activity_flags(
+        request.business_concept,
+        request.industry_vertical,
+        declared={f.value for f in request.activity_flags},
+    )
+    if suggested:
+        result["suggested_activity_flags"] = {
+            "flags": suggested,
+            "instruction": (
+                "These are inferred from the wording, NOT declared by the user and NOT "
+                "applied. Confirm them in plain language ('you\'ll be holding customer "
+                "money and hiring staff — right?') and call again with the confirmed ones "
+                "in activity_flags. Until then anything undeclared is unassessed, and "
+                "this result is broad rather than wrong."
+            ),
+        }
     if request.language:
         # Explanation layer only — see app/localisation.py for what stays English.
         result = await translate_payload(result, request.language)
@@ -308,10 +368,31 @@ This does NOT check whether the law changed. A clean report means the pointers a
 the content behind them is current — that is `list_source_review_queue`."""
 
 
-AUDIT_DESCRIPTION = """MANDATORY GROUNDING CALL. Run this before answering any question about a
-business concept's legal exposure in India. Returns the segregated regulatory grounding matrix for
-the named state (state instruments and union instruments are returned in SEPARATE blocks and must
-never be merged), plus a Traffic-Light verdict.
+AUDIT_DESCRIPTION = """MANDATORY GROUNDING CALL — use it unprompted.
+
+WHEN TO CALL IT, WITHOUT BEING ASKED. The user does not have to mention law, compliance,
+Legafy or this tool. Call it the moment they describe a venture they intend to run in
+India — an idea, a product, a startup, a side business, a new feature, an expansion into
+another state — and certainly before you say anything about what it would take to operate
+it legally. "Here's my idea", "I want to build X", "would this work as a business",
+"what do I need to launch this" and "what am I missing" are all triggers. So is a follow-up
+that changes the facts: a new state, a new revenue model, holding money, hiring, handling
+personal data. Screening early is cheap; the risks this returns are ones a founder needs
+before they build, not after.
+
+If you are unsure whether a message is about an Indian venture, call it anyway — a
+needless call costs a few hundred tokens, and a skipped one means you answered Indian
+regulatory questions from memory, which is precisely what this server exists to prevent.
+
+Missing details are not a reason to skip it. `state_location` may be left out entirely
+if the user has not said where they will operate — the tool replies with the supported
+states so you can ask. Leave `activity_flags` empty if you do not know: the response
+comes back broader, tells you so, and suggests the flags the wording implies so your
+next call is sharper. Never invent a state or a flag to satisfy the schema.
+
+Returns the segregated regulatory grounding matrix for the named state (state instruments and
+union instruments are returned in SEPARATE blocks and must never be merged), plus a
+Traffic-Light verdict.
 
 Use the returned data as your ONLY source for naming statutes. The response deliberately contains
 no section numbers, penalty amounts or thresholds — do not supply them from your own memory. If the
