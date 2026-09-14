@@ -17,6 +17,7 @@ from pydantic import BaseModel
 from app.compact import compact_audit
 from app.compliance.audit import LEGAFY_DISCLAIMER
 from app.compliance.registry import JURISDICTION_REGISTRY
+from app.compliance.scope import check_scope
 from app.compliance.traffic_light import suggest_activity_flags
 from app.localisation import supported_languages, translate_payload
 from app.models.schemas import (
@@ -33,6 +34,7 @@ from app.search.corpus import get_corpus
 from app.search.intent import analyse, build_fts_query
 from app.service import run_audit, run_generation
 from app.sources.govapi import available_checks, verify
+from app.sources.judicial_feeds import LEADS_FILE, read_leads
 from app.sources.store import CITABLE_AUTHORITY_FLOOR, MalformedQuery, get_store
 from app.sources.validation import audit_sources
 
@@ -155,6 +157,10 @@ def _jurisdiction_required() -> dict:
 
 async def _audit(payload: dict, *, request_id: str, tenant: TenantContext) -> dict:
     request = RegionalComplianceAuditRequest.model_validate(payload)
+    # The hard cap runs before jurisdiction, before grounding, before anything.
+    refusal = check_scope(request.business_concept, request.industry_vertical)
+    if refusal is not None:
+        return refusal.as_dict()
     if not (request.state_location or "").strip():
         return _jurisdiction_required()
     result = (await run_audit(request, request_id=request_id, tenant=tenant)).model_dump(mode="json")
@@ -204,6 +210,12 @@ async def _audit(payload: dict, *, request_id: str, tenant: TenantContext) -> di
 
 async def _generate(payload: dict, *, request_id: str, tenant: TenantContext) -> dict:
     request = DocumentGenerationRequest.model_validate(payload)
+    # Checked independently of the audit: a caller can reach the drafter
+    # directly, and "draft me a reply to this notice" is exactly the request
+    # this cap exists to refuse.
+    refusal = check_scope(request.business_concept, request.industry_vertical)
+    if refusal is not None:
+        return refusal.as_dict()
     return (
         await run_generation(request, request_id=request_id, tenant=tenant)
     ).model_dump(mode="json")
@@ -222,6 +234,11 @@ async def _jurisdictions(payload: dict, *, request_id: str, tenant: TenantContex
 
 async def _search_sources(payload: dict, *, request_id: str, tenant: TenantContext) -> dict:
     request = LegalSourceSearchRequest.model_validate(payload)
+    # Search is a research tool, and research is how a refused question gets
+    # asked a second time. The cap applies here too.
+    refusal = check_scope(request.query)
+    if refusal is not None:
+        return refusal.as_dict()
     store = get_store()
 
     analysis = analyse(request.query) if request.natural_language else None
@@ -313,13 +330,22 @@ async def _review_queue(payload: dict, *, request_id: str, tenant: TenantContext
         # The other half of the legal team's inbox: questions the corpus could
         # not answer at all, ordered by how many people hit the same gap.
         "coverage_gaps": backlog_report(limit=request.limit),
+        # Third inbox: what the courts published this week that touches a tracked
+        # instrument. Pointers at aggregator authority, never citable.
+        "judicial_leads": read_leads(
+            LEADS_FILE, limit=request.limit, jurisdiction=request.jurisdiction
+        ),
         "index": stats,
         "note": (
             "Two queues. `pending` is detected change at whitelisted primary sources, ordered "
             "by review priority (authority x change magnitude x instrument coverage x recency x "
             "exposure). `coverage_gaps` is questions the local corpus could not answer, ordered "
             "by how often they were asked — that is the crawl backlog. Both are prompts for a "
-            "human to read a source. Neither has changed any answer the engine gives."
+            "human to read a source. `judicial_leads` is what the watched courts "
+            "published that touches a tracked instrument — pointers at AGGREGATOR "
+            "authority (0.25, below the 0.80 citable floor), so a lead is something "
+            "to go and read on the court's own site, never something to quote. None "
+            "of the three has changed any answer the engine gives."
         ),
     }
 

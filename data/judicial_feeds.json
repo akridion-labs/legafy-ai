@@ -1,0 +1,120 @@
+{
+  "_README": [
+    "WEEKLY JUDICIAL TIP-OFF FEEDS. Read app/sources/judicial_feeds.py before editing.",
+    "",
+    "WHAT THIS IS. A list of RSS feeds that tell a reviewer THAT a court has",
+    "published something that may touch an instrument Legafy tracks. That is all.",
+    "A lead from here is never a citation, never enters the grounding matrix, and",
+    "never moves a traffic-light lane. It ends up in a human's reading queue.",
+    "",
+    "WHY indiankanoon.org AND NOT THE COURTS' OWN SITES. The courts publish",
+    "judgments, but most do not publish a machine-readable feed of them. Indian",
+    "Kanoon does, per court. It is an AGGREGATOR (authority weight 0.25, below the",
+    "0.80 citable floor), so it is fit to say 'go look', and unfit to be quoted.",
+    "The reviewer's job is to open the judgment on the COURT's own site before",
+    "anything reaches a user.",
+    "",
+    "EVERY SLUG BELOW WAS READ OFF https://indiankanoon.org/feeds/ ON 2026-09-14,",
+    "not guessed. A guessed slug returns HTTP 404, and an empty feed and a wrong",
+    "URL look identical in a weekly report — which is how a court silently stops",
+    "being watched. `make judicial-check` re-verifies every slug; run it before",
+    "trusting a quiet week.",
+    "",
+    "PERMISSION. robots.txt at indiankanoon.org does not disallow /feeds/, so",
+    "reading these is permitted. It DOES disallow many /doc/ paths — so this",
+    "module reads the feed and never follows the link to fetch a judgment body.",
+    "Metadata and a pointer only. Before relying on this commercially, get written",
+    "confirmation from Indian Kanoon; absence of a prohibition is not a licence."
+  ],
+  "feeds": [
+    {
+      "feed_id": "ik-supremecourt",
+      "court": "Supreme Court of India",
+      "url": "https://indiankanoon.org/feeds/latest/supremecourt/",
+      "jurisdiction": "IN-CENTRAL",
+      "cabinet": "corporate",
+      "note": "Binding on every High Court. A change here outranks any state reading."
+    },
+    {
+      "feed_id": "ik-telangana",
+      "court": "Telangana High Court",
+      "url": "https://indiankanoon.org/feeds/latest/telangana/",
+      "jurisdiction": "IN-TG",
+      "cabinet": "corporate"
+    },
+    {
+      "feed_id": "ik-amravati",
+      "court": "Andhra Pradesh High Court (Amaravati)",
+      "url": "https://indiankanoon.org/feeds/latest/amravati/",
+      "jurisdiction": "IN-AP",
+      "cabinet": "corporate",
+      "note": "Indian Kanoon's slug spells it 'amravati'. Kept verbatim on purpose - it is their identifier, not ours to correct."
+    },
+    {
+      "feed_id": "ik-karnataka",
+      "court": "Karnataka High Court",
+      "url": "https://indiankanoon.org/feeds/latest/karnataka/",
+      "jurisdiction": "IN-KA",
+      "cabinet": "corporate"
+    },
+    {
+      "feed_id": "ik-kerala",
+      "court": "Kerala High Court",
+      "url": "https://indiankanoon.org/feeds/latest/kerala/",
+      "jurisdiction": "IN-KL",
+      "cabinet": "corporate"
+    },
+    {
+      "feed_id": "ik-bombay",
+      "court": "Bombay High Court",
+      "url": "https://indiankanoon.org/feeds/latest/bombay/",
+      "jurisdiction": "IN-MH",
+      "cabinet": "corporate"
+    },
+    {
+      "feed_id": "ik-delhi",
+      "court": "Delhi High Court",
+      "url": "https://indiankanoon.org/feeds/latest/delhi/",
+      "jurisdiction": "IN-DL",
+      "cabinet": "corporate"
+    },
+    {
+      "feed_id": "ik-nclat",
+      "court": "National Company Law Appellate Tribunal",
+      "url": "https://indiankanoon.org/feeds/latest/nclat/",
+      "jurisdiction": "IN-CENTRAL",
+      "cabinet": "corporate",
+      "note": "Company law and insolvency. The most directly founder-relevant tribunal here."
+    },
+    {
+      "feed_id": "ik-itat",
+      "court": "Income Tax Appellate Tribunal",
+      "url": "https://indiankanoon.org/feeds/latest/itat/",
+      "jurisdiction": "IN-CENTRAL",
+      "cabinet": "taxation"
+    },
+    {
+      "feed_id": "ik-cci",
+      "court": "Competition Commission of India",
+      "url": "https://indiankanoon.org/feeds/latest/cci/",
+      "jurisdiction": "IN-CENTRAL",
+      "cabinet": "corporate"
+    },
+    {
+      "feed_id": "ik-consumer-national",
+      "court": "National Consumer Disputes Redressal Commission",
+      "url": "https://indiankanoon.org/feeds/latest/consumer_national/",
+      "jurisdiction": "IN-CENTRAL",
+      "cabinet": "consumer",
+      "note": "Where a marketplace's terms, refunds and grievance handling get tested."
+    },
+    {
+      "feed_id": "ik-sebisat",
+      "court": "Securities Appellate Tribunal",
+      "url": "https://indiankanoon.org/feeds/latest/sebisat/",
+      "jurisdiction": "IN-CENTRAL",
+      "cabinet": "corporate",
+      "note": "Relevant once a cap table involves instruments that look like securities."
+    }
+  ]
+}

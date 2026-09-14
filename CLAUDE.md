@@ -15,6 +15,8 @@ app/
                        obligations.py = duty -> how to close -> exposure, + IP screen
                        research.py    = the register searches a founder must run
   sources/validation.py  citation health: https, official host, whitelisted, not migrated
+  compliance/scope.py  the hard cap: criminal + family matters, refused in code
+  sources/judicial_feeds.py  weekly court RSS -> reviewer leads, never citable
   sources/govapi.py    government verification APIs — the CALLER'S facts, never the law
   search/cascade.py    local-first retrieval: L0 matrix, L1 index, L3 recorded miss
   providers/           model-agnostic router: anthropic | openai | ollama | offline
@@ -90,6 +92,19 @@ make up / down    # docker compose stack (api + cloudflared [+ redis])
     exactly what a copied file preserves. `make sources-check` fails on a foreign
     instrument prefix, but that is a backstop. Read `docs/ADDING_A_JURISDICTION.md`.
     When sources disagree on a title's year, OMIT the year and say why.
+
+14. **The hard cap is absolute.** `app/compliance/scope.py` refuses criminal and
+    matrimonial/family matters outright, before jurisdiction and before grounding,
+    on every free-text tool. No lane, no duties, no draft, no "general information"
+    — a refusal that leaks substance is not a refusal. Corporate carve-outs (POSH,
+    background verification, fraud/AML/KYC) are checked FIRST so an employer duty
+    is never refused. Never add bare "maintenance" to the family list: corporate
+    maintenance is a founder's own term for keeping filings current.
+15. **A court lead is a pointer, never a source.** `app/sources/judicial_feeds.py`
+    reads RSS from an aggregator at weight 0.25 — below the 0.80 citable floor —
+    stores title/link/date only, and never fetches a judgment body (robots.txt
+    disallows many /doc/ paths, and a reviewer wants the court's own copy anyway).
+    News sites are deliberately absent; see the module docstring.
 
 See `docs/ADDING_A_JURISDICTION.md` for how to add a state without assuming,
 `docs/LEGAL_DATA_SOURCES.md` for the source hierarchy and what

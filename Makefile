@@ -2,7 +2,7 @@
 # Legafy AI — developer & operations entrypoints
 # =============================================================================
 
-.PHONY: help install lint fmt test audit validate validate-live sources-check sandbox run smoke mcp build up up-host up-full down logs ps tunnel bootstrap clean audit-verify watch taxonomy
+.PHONY: help install lint fmt test audit validate validate-live sources-check sandbox run smoke mcp build up up-host up-full down logs ps tunnel bootstrap clean audit-verify watch taxonomy courts courts-check weekly
 
 VENV        ?= .venv
 # Interpreter used to CREATE the venv. Python 3.11-3.14 all work: every pin is
@@ -97,3 +97,13 @@ taxonomy: ## What people actually ask (from the opt-in question corpus)
 
 audit-verify: ## Verify the append-only audit vault's hash chain is intact
 	$(PYTHON) -c "from app.security.telemetry import get_audit_vault; result = get_audit_vault().verify_chain(); print(result); raise SystemExit(0 if result else 1)"
+
+courts-check: ## Are the watched court feeds still real? Fails if a slug is dead
+	$(PYTHON) -m app.sources.judicial_feeds
+
+courts: ## Weekly court sweep — writes new leads into the reviewer inbox
+	$(PYTHON) -m app.sources.judicial_feeds --write
+
+weekly: ## The whole freshness pass: government pages, then the courts
+	$(MAKE) watch
+	$(MAKE) courts

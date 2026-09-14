@@ -77,7 +77,7 @@ to use it. For claude.ai, Claude Desktop, ChatGPT and everything else, see
 
 ```bash
 make install
-make test                      # 167 tests, offline, no network
+make test                      # 213 tests, offline, no network
 make run                       # http://localhost:8000/docs
 
 # generate a real document with the offline provider — no API key needed
@@ -143,6 +143,8 @@ generated/           runtime output + audit vault — gitignored, back this up
 
 | | |
 |---|---|
+| [How Legafy works](docs/HOW_LEGAFY_WORKS.md) | **start here** — the whole system in plain language, no engineering assumed |
+| [Deployment runbook](docs/RUNBOOK_DEPLOY.md) | zero to a working connector, every command written out, Claude + ChatGPT |
 | [Hosting & connectors](docs/HOSTING_MCP.md) | Plugin marketplace, Claude custom connector, ChatGPT, token issuing |
 | [Search, freshness & language](docs/SEARCH_AND_FRESHNESS.md) | the ranking algorithm, the trie, the corpus privacy line, the token budget |
 | [Roadmap](ROADMAP.md) | Verification, municipal layer, IP screening, the corpus question |
