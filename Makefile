@@ -33,6 +33,11 @@ test: ## Run the pytest suite
 audit: ## Scan pinned dependencies for published advisories
 	$(PIP) install -q pip-audit
 	$(VENV)/bin/pip-audit -r requirements.txt
+	@echo "-- development dependencies --"
+	@# Dev deps are not shipped, but they execute on developer machines and in
+	@# CI, with access to the source tree and whatever credentials are in the
+	@# shell. A compromised test runner is a supply-chain incident too.
+	$(VENV)/bin/pip-audit -r requirements-dev.txt
 
 validate: ## Validate plugin manifests, tool schemas and client config examples
 	$(PYTHON) scripts/validate_integration.py

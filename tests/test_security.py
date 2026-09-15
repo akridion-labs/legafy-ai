@@ -803,3 +803,62 @@ def test_a_disputed_title_year_is_omitted_not_guessed():
     )
     assert not re.search(r"\b(19|20)\d{2}\b", lwf["title"]), lwf["title"]
     assert "disagree" in lwf["commencement_note"].lower()
+
+
+# -- supply chain: the audit must keep running when nobody is looking --------
+
+
+def test_ci_audits_dependencies_on_a_schedule():
+    """The zero-day gap this closes, pinned so it cannot silently reopen.
+
+    A clean `pip-audit` is a fact about today. The property worth having is
+    "we would know tomorrow", and that comes from the job running when nobody
+    pushed anything — an advisory lands on a day nobody is committing, and a
+    repo that is not being pushed to is a repo that has stopped looking.
+    """
+    import pathlib
+
+    yaml = pytest.importorskip("yaml")
+    workflow = pathlib.Path(__file__).resolve().parents[1] / ".github/workflows/ci.yml"
+    ci = yaml.safe_load(workflow.read_text())
+    # PyYAML parses the bare key `on:` as the boolean True.
+    triggers = ci.get("on", ci.get(True, {}))
+
+    assert "schedule" in triggers, "the audit must run on a schedule, not only on push"
+    assert triggers["schedule"][0]["cron"], "the schedule needs a cron expression"
+
+    audit = ci["jobs"]["audit"]
+    steps = " ".join(str(step) for step in audit["steps"])
+    assert "requirements.txt" in steps
+    assert "requirements-dev.txt" in steps, (
+        "dev dependencies execute on developer machines and in CI with access "
+        "to the source tree — audit them too"
+    )
+    # The nightly answer must not be blocked by an unrelated test failure.
+    assert "needs" not in audit, "the audit must not wait behind the test matrix"
+
+
+def test_ci_runs_with_least_privilege():
+    import pathlib
+
+    yaml = pytest.importorskip("yaml")
+    workflow = pathlib.Path(__file__).resolve().parents[1] / ".github/workflows/ci.yml"
+    ci = yaml.safe_load(workflow.read_text())
+    assert ci["permissions"]["contents"] == "read", (
+        "the default workflow token must be read-only; a job needing more asks "
+        "for it explicitly"
+    )
+
+
+def test_pins_are_exact_not_floating():
+    """`>=` is how a green audit today becomes an unreviewed upgrade tomorrow."""
+    import pathlib
+    import re
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    for name in ("requirements.txt", "requirements-dev.txt"):
+        for line in (root / name).read_text().splitlines():
+            line = line.split("#")[0].strip()
+            if not line or line.startswith("-"):
+                continue
+            assert re.search(r"==\s*\d", line), f"{name}: {line!r} is not pinned exactly"

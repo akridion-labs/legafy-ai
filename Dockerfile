@@ -9,6 +9,14 @@
 # ---------------------------------------------------------------------------
 # Stage 1: builder — build-essential lives ONLY here.
 # ---------------------------------------------------------------------------
+# Pin by digest, not by tag, before this goes anywhere public: a tag can be
+# re-pointed at a different image, so `3.11-slim` is a promise about a name and
+# not about bytes. Resolve the current digest with
+#   docker buildx imagetools inspect python:3.11-slim --format '{{.Manifest.Digest}}'
+# and replace the tag with `python:3.11-slim@sha256:<digest>` in BOTH stages.
+# Left as a tag here on purpose rather than inventing a digest I could not
+# verify from this environment — a wrong digest fails the build loudly, but a
+# plausible-looking wrong one is exactly the kind of thing that gets copied.
 FROM python:3.11-slim AS builder
 
 ENV PIP_NO_CACHE_DIR=1 \
@@ -32,7 +40,7 @@ RUN pip wheel --wheel-dir /wheels -r requirements.txt
 FROM python:3.11-slim AS runtime
 
 LABEL org.opencontainers.image.title="Legafy AI" \
-      org.opencontainers.image.vendor="Akridion Labs LLP" \
+      org.opencontainers.image.vendor="Akridion Labs" \
       org.opencontainers.image.source="https://github.com/akridion-labs/legafy-ai" \
       org.opencontainers.image.licenses="Apache-2.0"
 
