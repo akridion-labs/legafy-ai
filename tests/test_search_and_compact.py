@@ -220,3 +220,96 @@ def test_compact_is_materially_smaller():
 @pytest.mark.parametrize("field", ["isolation_contract", "provenance_warning", "disclaimer"])
 def test_static_text_is_not_repeated_per_call(field):
     assert field not in compact_audit(FULL)
+
+
+# -- progressive disclosure: index -> expand one branch ----------------------
+
+
+def _audit(**kw):
+    import asyncio
+
+    from app.mcp.server import LOCAL_TENANT
+    from app.tools import TOOLS_BY_NAME
+
+    payload = {
+        "business_concept": (
+            "A marketplace for local tutors that holds student payments in escrow "
+            "until the session finishes."
+        ),
+        "industry_vertical": "Marketplace",
+        "state_location": "Kerala",
+    }
+    payload.update(kw)
+    return asyncio.run(
+        TOOLS_BY_NAME["execute_regional_compliance_audit"].handler(
+            payload, request_id="t", tenant=LOCAL_TENANT
+        )
+    )
+
+
+def test_an_index_never_hides_a_red_light():
+    """The whole safety question for progressive disclosure.
+
+    An index is allowed to withhold duties. It is never allowed to withhold the
+    verdict, a RED signal, the halt notice or the counsel brief — invariant 8:
+    a token budget is not a safety dial.
+    """
+    index = _audit(detail="index")
+    compact = _audit()
+
+    assert index["lane"] == compact["lane"] == "RED"
+    assert index["automation_permitted"] is False
+    assert index["red"] == compact["red"], "a RED signal was dropped by indexing"
+    assert index["halt"] == compact["halt"]
+    assert index["ask_your_lawyer"] == compact["ask_your_lawyer"]
+    assert index["amber"] == compact["amber"]
+
+
+def test_an_index_withholds_the_bodies_and_says_how_to_get_them():
+    index = _audit(detail="index")
+    assert index["_mode"] == "index"
+    for heavy in ("obligations", "playbooks", "judicial", "research_checklist"):
+        assert heavy not in index, f"{heavy} should not be in an index"
+    assert index["index"]["domains"], "the index must say which domains exist"
+    # Self-describing: the model must not need the docs to expand.
+    assert "domains=['<name>']" in index["index"]["expand"]
+    assert "NEVER hides a red light" in index["index"]["expand"]
+
+
+def test_the_index_counts_match_what_expansion_returns():
+    """Progressive disclosure must not lose a duty between the two calls."""
+    index = _audit(detail="index")
+    counted = index["index"]["domains"]
+    everything = _audit()
+
+    from collections import Counter
+
+    actual = Counter(ob.get("playbook") or "general" for ob in everything["obligations"])
+    assert {k: v["obligations"] for k, v in counted.items()} == dict(actual)
+
+    # And expanding every domain returns every duty the unfiltered call does.
+    expanded = _audit(domains=sorted(counted))
+    assert len(expanded["obligations"]) == len(everything["obligations"])
+
+
+def test_a_narrowed_answer_announces_that_it_is_narrowed():
+    """A caller who forgot the filter must not read this as the whole picture."""
+    one = _audit(domains=["labour"])
+    assert one["expanded_domains"] == ["labour"]
+    assert "not sent" in one["partial"]
+    assert all(ob["playbook"] == "labour" for ob in one["obligations"])
+    assert set(one["playbooks"]) == {"labour"}
+    # Proofs follow the narrowing, or the saving is spent carrying all 25.
+    assert set(one["proofs"]) <= {ob["ref"] for ob in one["obligations"]}
+    # The lane still cannot be softened by asking for less.
+    assert one["lane"] == "RED"
+    assert one["halt"]
+
+
+def test_indexing_is_worth_doing():
+    """If the saving ever stops being large, the added parameter is not earning."""
+    import json
+
+    index = len(json.dumps(_audit(detail="index")))
+    compact = len(json.dumps(_audit()))
+    assert index < compact * 0.4, f"index {index} vs compact {compact} — saving too small"

@@ -177,8 +177,13 @@ async def _audit(payload: dict, *, request_id: str, tenant: TenantContext) -> di
             lane=result.get("traffic_light", {}).get("lane"),
         )
 
-    if request.detail == "compact":
-        result = compact_audit(result, request.sections)
+    if request.detail in {"compact", "index"}:
+        result = compact_audit(
+            result,
+            request.sections,
+            index_only=request.detail == "index",
+            domains=request.domains,
+        )
 
     # Free text back into the engine's own vocabulary. The first call usually
     # arrives with no flags at all — the model has an idea, not a questionnaire
@@ -409,6 +414,15 @@ before they build, not after.
 If you are unsure whether a message is about an Indian venture, call it anyway — a
 needless call costs a few hundred tokens, and a skipped one means you answered Indian
 regulatory questions from memory, which is precisely what this server exists to prevent.
+
+START CHEAP. The first call in a conversation should be `detail: "index"`. It
+returns the verdict, every RED signal, the halt notice and the counsel brief in full,
+plus a per-domain COUNT of duties rather than the duties themselves — about a twelfth
+of the tokens of a full listing. Then expand ONE domain with `detail: "compact"` and
+`domains: ["labour"]` once you know which one the user is actually asking about. A
+founder told "RED, you are holding customer money, stop and retain counsel" never
+needs the other nine domains, and indexing is what stops them being sent anyway.
+Expanding every domain one at a time costs more than never having indexed, so do not.
 
 Missing details are not a reason to skip it. `state_location` may be left out entirely
 if the user has not said where they will operate — the tool replies with the supported

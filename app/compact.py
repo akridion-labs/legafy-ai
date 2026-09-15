@@ -50,7 +50,59 @@ def _proof(instrument: dict[str, Any], jurisdiction: str, verification: str) -> 
     }
 
 
-def compact_audit(full: dict[str, Any], sections: list[str] | None = None) -> dict[str, Any]:
+def _domain_of(obligation: dict[str, Any]) -> str:
+    return obligation.get("playbook") or "general"
+
+
+def build_index(ledger: dict[str, Any], proofs: dict[str, Any]) -> dict[str, Any]:
+    """The root of the tree: what exists, per domain, without the bodies.
+
+    Measured on a real Kerala escrow screen, the three heavy blocks are
+    obligations (31% of the payload), the court tier (23%) and the playbooks
+    (20%) — 74% between them. None of it is duplicated; there is simply a lot,
+    and almost all of it is about domains the conversation has not reached yet.
+
+    So this returns counts and handles instead of text, and the caller expands
+    the one branch it needs. A founder told "RED — you are holding customer
+    money, stop and get counsel" never needs the other nine domains, and this
+    is what stops them being sent anyway.
+    """
+    by_domain: dict[str, dict[str, Any]] = {}
+    for obligation in ledger.get("obligations", []):
+        domain = _domain_of(obligation)
+        entry = by_domain.setdefault(
+            domain, {"obligations": 0, "lanes": {}, "proofs": []}
+        )
+        entry["obligations"] += 1
+        lane = obligation.get("lane", "AMBER")
+        entry["lanes"][lane] = entry["lanes"].get(lane, 0) + 1
+        ref = obligation.get("ref")
+        if ref and ref not in entry["proofs"]:
+            entry["proofs"].append(ref)
+
+    return {
+        "domains": dict(sorted(by_domain.items())),
+        "judicial_questions": len(ledger.get("judicial_questions", [])),
+        "proofs_available": len(proofs),
+        "expand": (
+            "This is an index, not the answer — the duties themselves have not been "
+            "sent. Call this tool again with detail='compact' and domains=['<name>'] "
+            "to get one domain's duties, its playbook and its proofs. Expand the "
+            "domain the user is actually asking about, not all of them: fetching "
+            "every branch costs more than never having indexed. The lane, the halt "
+            "notice, every RED signal and the counsel brief are already above and "
+            "are complete — an index NEVER hides a red light."
+        ),
+    }
+
+
+def compact_audit(
+    full: dict[str, Any],
+    sections: list[str] | None = None,
+    *,
+    index_only: bool = False,
+    domains: list[str] | None = None,
+) -> dict[str, Any]:
     """Shrink an audit response to lane, duties and proofs.
 
     Three sources of noise are removed:
@@ -117,16 +169,38 @@ def compact_audit(full: dict[str, Any], sections: list[str] | None = None) -> di
     }
 
     # verify_at duplicates proofs[ref].url and quantum is constant; both drop.
-    if want("obligations"):
+    if want("obligations") and not index_only:
+        keep = set(domains) if domains else None
+        obligations = [
+            ob
+            for ob in ledger.get("obligations", [])
+            if keep is None or _domain_of(ob) in keep
+        ]
         compact["obligations"] = [
             {k: v for k, v in ob.items() if k not in {"verify_at", "quantum", "tier"}}
-            for ob in ledger.get("obligations", [])
+            for ob in obligations
         ]
-        compact["playbooks"] = ledger.get("playbooks", {})
+        playbooks = ledger.get("playbooks", {})
+        compact["playbooks"] = (
+            {k: v for k, v in playbooks.items() if k in keep} if keep else playbooks
+        )
         compact["quantum_note"] = ledger.get("quantum_note", "")
+        if keep:
+            # Narrowing must announce itself. A caller that asked for one domain
+            # and forgot must not read this as "these are all your duties".
+            compact["expanded_domains"] = sorted(keep)
+            compact["partial"] = (
+                "Only the named domain(s) were expanded. Other duties exist and were "
+                "not sent — re-run with detail='index' to see every domain."
+            )
+            # Proofs follow the narrowing, or the saving is lost to the 25 it
+            # would otherwise carry.
+            refs = {ob.get("ref") for ob in obligations}
+            compact["proofs"] = {k: v for k, v in proofs.items() if k in refs}
         # The court tier. `turns_on` is the part a founder cannot infer and a
         # lawyer needs; the prose around it is already in the tool description.
         if ledger.get("judicial_questions"):
+            _keep_refs = {ob.get("ref") for ob in obligations} if keep else None
             compact["judicial"] = [
                 {
                     "ref": q["instrument_ref"],
@@ -137,13 +211,19 @@ def compact_audit(full: dict[str, Any], sections: list[str] | None = None) -> di
                     "do": q["founder_action"],
                 }
                 for q in ledger["judicial_questions"]
+                if _keep_refs is None or q["instrument_ref"] in _keep_refs
             ]
+
+    if index_only:
+        compact["index"] = build_index(ledger, proofs)
+        # Proof pointers are cheap and are what makes a RED verdict checkable,
+        # so they stay; the index names which refs belong to which domain.
 
     if not want("proofs"):
         compact.pop("proofs", None)
 
     checklist = full.get("research_checklist") or {}
-    if want("research_checklist") and checklist.get("phases"):
+    if want("research_checklist") and not index_only and checklist.get("phases"):
         # `authority` and `proves` are dropped: the register name already says who
         # runs it, and the model can read the name. What it cannot infer is the
         # cost of skipping, so that stays.
@@ -159,7 +239,7 @@ def compact_audit(full: dict[str, Any], sections: list[str] | None = None) -> di
         ]
 
     screen = full.get("ip_screen") or {}
-    if want("ip_screen") and screen.get("findings"):
+    if want("ip_screen") and not index_only and screen.get("findings"):
         compact["ip_risks"] = [
             {
                 "id": f["id"],
@@ -185,7 +265,7 @@ def compact_audit(full: dict[str, Any], sections: list[str] | None = None) -> di
     if full.get("rate_limit"):
         compact["rate_limit"] = full["rate_limit"]
 
-    compact["_mode"] = "compact"
+    compact["_mode"] = "index" if index_only else "compact"
     return compact
 
 

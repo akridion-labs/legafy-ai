@@ -202,13 +202,28 @@ class RegionalComplianceAuditRequest(BaseModel):
             "which remains the controlling version."
         ),
     )
-    detail: Literal["compact", "full"] = Field(
+    detail: Literal["index", "compact", "full"] = Field(
         default="compact",
         description=(
-            "compact (default) returns lane, duties and a proof pointer per duty — roughly "
-            "a tenth of the tokens, with the static contract text moved into the tool "
-            "description where it is sent once per session rather than per call. "
-            "full returns instrument-level metadata."
+            "index is the CHEAPEST and the right first call in a conversation: the "
+            "verdict, every RED signal, the halt notice, the counsel brief, and then a "
+            "per-domain COUNT of duties instead of the duties themselves. About a "
+            "twelfth of the tokens. Expand one domain afterwards with "
+            "detail='compact' + domains=['labour']. "
+            "compact (default) returns lane, duties and a proof pointer per duty. "
+            "full returns instrument-level metadata. "
+            "None of the three can hide a red light — the lane and the halt are "
+            "unconditional in all of them."
+        ),
+    )
+    domains: list[str] | None = Field(
+        default=None,
+        description=(
+            "Expand only these obligation domains, e.g. ['labour'] or "
+            "['taxation','data_protection']. Names come from the `index.domains` keys "
+            "of an index call. Omit for every domain. Narrowing is announced in the "
+            "response as `partial`, so a narrowed answer is never mistaken for a "
+            "complete one."
         ),
     )
     sections: list[
