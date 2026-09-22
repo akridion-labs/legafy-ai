@@ -6,6 +6,86 @@ carried forever.
 
 ---
 
+## Innovation accounting — read this before the phases (22 Sep 2026)
+
+The phases below are a good plan. That is not the problem. The problem is what
+the ledger says when you count what has been built against what has been
+learned.
+
+| Built | Validated |
+|---|---|
+| 12,920 lines of Python across 55 files | **0** jurisdiction files promoted to `VERIFIED` |
+| 5,247 lines of documentation across 18 files | **0** of 44 instruments verified |
+| 221 tests, all green | **0** customers, **0** signups, **0** paid |
+| 80 audit-vault records | all of them ours, from testing |
+
+On the Lean Startup validation ladder that is **Level 1 — "I think customers
+want this."** Not level 2; nobody outside has been asked. Every line above was
+built on an assumption nobody has tested.
+
+Score the plan on the five diagnostics and it is honest to say **2/10**:
+
+| Question | Answer today |
+|---|---|
+| What is the riskiest assumption? | never written down |
+| How will you test it? | no experiment designed |
+| What metric validates or invalidates it? | none (the eval set measures *correctness*, not demand) |
+| Can you test with less than this? | yes — by an enormous margin |
+| What happens if the experiment fails? | no pivot criteria exist |
+
+### The part that stings
+
+**"Verify one state end to end" has been item 1 of "what to do next week" since
+v1.0.0, and it has not moved** — while roughly five thousand lines were added
+around it. Court feeds, progressive disclosure, the scope cap, nightly
+dependency audits: all defensible work, all real engineering, none of it
+validated learning. The scope cap was a genuine safety obligation and would be
+built again. The rest was building because building is what was asked for.
+
+Nothing below Phase 1 can be sold at all while every instrument reads
+`SEED_UNVERIFIED`. That is not a caveat on the roadmap; it is a gate in front
+of the whole thing.
+
+### The three leap-of-faith assumptions, ranked by risk
+
+Ranked by *which failure would be fatal*, not by which is easiest to test.
+
+**1. Verification is economically tractable.** Nobody has verified a single
+instrument, so nobody knows whether promoting one state takes an afternoon or a
+month. Every revenue line depends on this number and it has never been
+measured. If it is four weeks per state, the unit economics of the entire
+product are different from what anyone has assumed — and no amount of further
+engineering changes that.
+
+> **Experiment:** verify **one instrument** — Telangana Shops and
+> Establishments — against its primary source. Write down the wall-clock hours.
+> **Metric:** hours per instrument. **Falsified if:** > 8 hours, in which case
+> the six-state promise needs re-planning before another feature is added.
+> **Cost:** one afternoon. **Code required: none.**
+
+**2. Someone will pay for a pre-counsel screen.** Level 1 today.
+
+> **Experiment:** a concierge MVP. Run five screens by hand for five real
+> founders using the tool as it stands, then ask for a paid pilot.
+> **Metric:** how many of five say yes to a number. **Falsified if:** zero.
+> **Cost:** five conversations. **Code required: none.**
+
+**3. Legafy's answers are measurably better than a plain model's.** Assumed
+throughout, never measured — see `docs/HOW_LEGAFY_WORKS.md` §10, which is why
+there is deliberately no accuracy claim on the front page.
+
+> **Experiment:** the 100-question study in that section.
+> **Metric:** rate of invented sections, wrong-state rules and invented
+> penalties, with and without Legafy. **Cost:** a day, plus a lawyer's marking.
+
+### The rule this section exists to enforce
+
+**No new capability ships until assumption 1 has a number.** It is the cheapest
+of the three, it gates the other two, and it needs no code at all — which is
+precisely why it keeps losing to work that does.
+
+---
+
 ## Where we are
 
 Shipped and verified in v1.0.0:

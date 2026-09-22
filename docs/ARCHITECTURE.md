@@ -82,3 +82,67 @@ any post-hoc edit. Writes are fsynced under an asyncio lock.
   not a rebuild.
 - **The offline provider** produces structurally valid but generic prose. It
   exists to prove the pipeline, not to draft anything anyone should read.
+
+---
+
+## Measured against the Dependency Rule (22 Sep 2026)
+
+Scored by walking the real import graph, not by reading the layout. Script in
+the commit that added this section; re-run it before believing this table.
+
+| Diagnostic | Result |
+|---|---|
+| Business rules testable without DB, web server or framework | ✅ 221 tests run offline, no server, no key |
+| All source dependencies point inward | ❌ **4 outward imports** |
+| Database swappable without touching business logic | ⚠️ partial — `cascade` takes a store, but `get_store()` is a singleton |
+| Use cases independent of delivery mechanism | ✅ `service.py` takes DTOs; one catalogue serves REST **and** MCP |
+| Framework confined to the outermost circle | ❌ `docx` in `pipeline`, `httpx` in `sources` |
+| Component graph cycle-free | ✅ measured: **no cycles** |
+| Main wires all dependencies | ❌ use cases call `get_router()` / `get_audit_vault()` themselves |
+
+**4 of 7 → roughly 7/10.** The half that holds is the half that earns its keep:
+the use-case layer is genuinely delivery-independent, which is *why* adding the
+MCP transport did not touch a single business rule, and why the same seven tools
+serve HTTP and stdio from one definition.
+
+### The four outward imports, and what each actually costs
+
+| Import | Verdict |
+|---|---|
+| `service` → `providers.get_router()` | **Real.** Service locator inside a use case. |
+| `service` → `security.get_audit_vault()` | **Real.** Same pattern. |
+| `pipeline.assembler` → `providers.router` | **Real**, same root cause. |
+| `sources.watcher` → `security.get_audit_vault()` | **Real**, and it is a *local* import inside a function — a lazy import to dodge a cycle is the smell that says the dependency points the wrong way. |
+| `pipeline.renderers` → `docx` | **Mislabelled, not misbuilt.** Every docx import is function-local and confined to one module whose entire job is rendering. It is an adapter filed under `pipeline`. |
+| `sources.watcher` → `httpx` | Same: an adapter filed under `sources`. |
+
+So two of the six are my layer model being wrong about the folder names, and
+four are one root cause: **dependencies are fetched, not injected.**
+
+### The cost, made visible
+
+`tests/test_api.py` calls **four** cache-reset functions in one fixture —
+`reset_settings_cache`, `reset_audit_vault_cache`, `reset_tenancy_cache`,
+`reset_router_cache`. Those functions exist in production code *only* so the
+tests can undo a global. That is the bill for the service-locator pattern, and
+it is the honest measure of what the violation costs today: about ten lines and
+some fixture noise.
+
+### Decision: not fixing this now
+
+Injecting a `ProviderRouter` and an `AuditVault` through `service.py` and the
+assembler is a real refactor across working, fully tested code — on a product
+with **zero users and zero verified jurisdiction data**. A clean-architecture
+refactor at this stage is the textbook shape of vanity engineering: it would
+feel like progress and change nothing a customer can see.
+
+Nothing on the near-term roadmap is blocked by it either. Swapping to Ollama on
+the server is already a settings change. Adding a state is data. OAuth lives in
+the outer circles. The violation is inert.
+
+**Revisit when any of these becomes true**, and not before:
+
+- A second application needs to reuse the use-case layer (then the globals bite).
+- Provider selection has to vary *per request* — per tenant, per document type —
+  rather than per process.
+- Tests start needing more than a reset function to isolate a use case.
