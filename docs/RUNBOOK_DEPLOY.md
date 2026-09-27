@@ -86,6 +86,20 @@ This takes two to three minutes and prints a lot. That is normal.
 list. If it fails **on a wheel** (a message mentioning `building wheel`), stop
 and report it — that is a real problem, not something to work around.
 
+Now install Legafy itself into that environment:
+
+```bash
+.venv/bin/pip install -e .
+```
+
+**CHECK** — the last line should say `Successfully installed legafy-ai-1.0.0`.
+
+**Do not skip this step, and do not leave off the trailing `.`** (it is the
+argument, and it means "this directory"). Without it, everything in §2 still
+passes, because those commands run from inside this folder — and then §3 fails
+with nothing but *"Server disconnected"* to explain itself. This step is what
+lets Legafy be started from anywhere on the Mac rather than only from here.
+
 > **Why `.venv/bin/` in front of everything?** A virtual environment keeps its
 > own copy of Python and its libraries in that folder. The prefix says "use
 > Legafy's Python, not the Mac's". You can type `source .venv/bin/activate` once
@@ -156,7 +170,6 @@ Paste this in, replacing everything in the file:
     "legafy": {
       "command": "/Users/deepakbanavathu/Desktop/Legafy Ai/legafy-ai/.venv/bin/python",
       "args": ["-m", "app.mcp.server"],
-      "cwd": "/Users/deepakbanavathu/Desktop/Legafy Ai/legafy-ai",
       "env": {
         "LEGAFY_MCP_MODE": "local",
         "LEGAFY_ENV": "development",
@@ -171,13 +184,33 @@ Paste this in, replacing everything in the file:
 
 Save (`Cmd` + `S`) and close TextEdit.
 
+**There is deliberately no `cwd` here.** That is what `pip install -e .` in §1
+bought you: Legafy can now be started from any folder. If you skipped that step,
+this entry fails with `ModuleNotFoundError: No module named 'app'` and the app
+reports only *"Server disconnected"*.
+
 Three things go wrong here and all three are silent:
 
 - **The paths must be absolute.** Claude Desktop does not understand `~`.
-- **`cwd` must be set**, or Legafy cannot find its own data files.
-- **JSON is strict.** One missing comma or a "smart quote" breaks the whole
-  file. If TextEdit has turned `"` into `"`, turn off
-  Edit → Substitutions → Smart Quotes and retype them.
+- **JSON is strict.** One missing comma, one missing brace, or a "smart quote"
+  breaks the *whole* file — and a file that does not parse loads **no** servers
+  at all, which looks exactly like a server that failed to start. If TextEdit
+  has turned `"` into `"`, turn off Edit → Substitutions → Smart Quotes and
+  retype them.
+- **If you are adding Legafy to a file that already has other connectors in
+  it**, make sure `mcpServers` is closed before whatever follows it. Burying the
+  rest of the file inside `mcpServers` is the easiest mistake to make and the
+  hardest to see.
+
+**Check the file parses before you reopen the app.** This is five seconds and it
+rules out the entire class of failure above:
+
+```bash
+python3 -m json.tool < ~/Library/Application\ Support/Claude/claude_desktop_config.json > /dev/null && echo "JSON OK" || echo "STILL BROKEN"
+```
+
+Anything but `JSON OK` and the error names the line and column. Fix it before
+going further — reopening the app changes nothing while the file is unreadable.
 
 Open Claude Desktop again. Look for the connector icon in the message box —
 Legafy's tools should be listed.

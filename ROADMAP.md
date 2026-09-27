@@ -46,7 +46,7 @@ Nothing below Phase 1 can be sold at all while every instrument reads
 `SEED_UNVERIFIED`. That is not a caveat on the roadmap; it is a gate in front
 of the whole thing.
 
-### The three leap-of-faith assumptions, ranked by risk
+### The four leap-of-faith assumptions, ranked by risk
 
 Ranked by *which failure would be fatal*, not by which is easiest to test.
 
@@ -78,11 +78,47 @@ there is deliberately no accuracy claim on the front page.
 > **Metric:** rate of invented sections, wrong-state rules and invented
 > penalties, with and without Legafy. **Cost:** a day, plus a lawyer's marking.
 
+**4. The buyer is the founder.** Assumed on day one and never examined. It is
+listed last because it was thought of last, not because it is least dangerous —
+if it is wrong, assumption 2 is measuring the wrong people and its answer is
+worthless whatever it says.
+
+A pre-incorporation founder has no budget line, needs the product once, and is
+gone after they incorporate. A corporate legal or compliance team has a
+recurring budget, a named owner and a renewal. And Legafy's one real
+differentiator — hard state isolation — is worth most to whoever operates in
+several states at once. The tool says so itself, unprompted, in `state_traps`:
+
+> "Deploying employees across Telangana and another state under one payroll —
+> professional tax, welfare fund and shops-and-establishments registration do
+> not travel across the border."
+
+That is a multi-state employer's problem, not a first-time founder's. The
+feature may have been built for the wrong reader.
+
+The incumbent in that market is not a startup: TeamLease RegTech, Avantis and
+Lexplosion's Komrisk sell compliance management to large Indian enterprises on
+human-maintained content and enterprise sales motions, at a content volume
+Legafy will not match. The only wedge worth testing is that every one of them is
+a portal you log into, and Legafy is not — it arrives inside the tool the team
+is already working in. That is a hypothesis, not a plan.
+
+> **Experiment:** five interview conversations, per `docs/BUYER_DISCOVERY.md`.
+> **Metric:** how many of five describe the multi-state problem unprompted, and
+> how many name a budget that already pays for it. **Falsified if:** they do not
+> recognise the problem, or they recognise it and it is owned by a consultant
+> rather than a budget. **Cost:** five conversations. **Code required: none.**
+
 ### The rule this section exists to enforce
 
 **No new capability ships until assumption 1 has a number.** It is the cheapest
-of the three, it gates the other two, and it needs no code at all — which is
+of the four, it gates the others, and it needs no code at all — which is
 precisely why it keeps losing to work that does.
+
+Assumption 4 is the one exception, and only because it requires no code either
+and can run in parallel: interviewing is not shipping. It is listed as an
+exception explicitly so that "we are doing discovery" cannot later be used to
+justify building something instead.
 
 ---
 

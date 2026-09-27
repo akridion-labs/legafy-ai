@@ -3,7 +3,6 @@
     "legafy-ai": {
       "command": "/absolute/path/to/legafy-ai/.venv/bin/python",
       "args": ["-m", "app.mcp.server"],
-      "cwd": "/absolute/path/to/legafy-ai",
       "env": {
         "LEGAFY_MCP_MODE": "local",
         "LEGAFY_ENV": "development",

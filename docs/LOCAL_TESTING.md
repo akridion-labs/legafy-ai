@@ -24,7 +24,7 @@ it into two arguments and `cd` fails.
 **If you have `make`:**
 
 ```bash
-make install               # creates .venv and installs everything
+make install               # creates .venv, installs everything, installs the package
 make test                  # ruff + the full suite; expect 167 passed
 ```
 
@@ -35,8 +35,16 @@ do not need it; these are the exact commands `make install` runs:
 python3 -m venv .venv
 .venv/bin/pip install --upgrade pip
 .venv/bin/pip install -r requirements-dev.txt
-.venv/bin/pytest -q        # expect 167 passed
+.venv/bin/pip install -e .   # REQUIRED — see below
+.venv/bin/pytest -q          # expect 167 passed
 ```
+
+**That `pip install -e .` line is not optional.** It installs this project into
+the venv so `import app` resolves from any directory. Skip it and everything
+above still passes — the tests run from the repo root, where `app` happens to be
+importable — and then Claude Desktop refuses to start the server with
+`ModuleNotFoundError: No module named 'app'` and tells you only *"Server
+disconnected"*. The trailing `.` is the argument; it means "this directory".
 
 To get `make` anyway: `xcode-select --install` (Apple Command Line Tools).
 
@@ -108,27 +116,50 @@ Edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
 {
   "mcpServers": {
     "legafy": {
-      "command": "/Users/deepakbanavathu/Desktop/Legafy Ai/legafy-ai/scripts/mcp_stdio.sh"
+      "command": "/Users/deepakbanavathu/Desktop/Legafy Ai/legafy-ai/.venv/bin/python",
+      "args": ["-m", "app.mcp.server"],
+      "env": {
+        "LEGAFY_MCP_MODE": "local",
+        "LEGAFY_ENV": "development",
+        "LEGAFY_PROVIDER_CHAIN": "offline",
+        "LEGAFY_TELEMETRY_SALT": "local-dev-salt-change-before-production"
+      }
     }
   }
 }
 ```
 
-**One line, and no `args`, `cwd` or `env`.** That is deliberate, and it is the
-fix for a real failure rather than a stylistic preference.
+**Note what is absent: there is no `cwd`.** That is what the `pip install -e .` in the
+install step above buys you, and it is worth understanding because the failure it prevents
+is invisible.
 
-The obvious config points `command` at `.venv/bin/python` with
-`args: ["-m","app.mcp.server"]` and `cwd` set to the repo. It works when you run
-it yourself and fails in the app, because `python -m app.mcp.server` finds the
-`app` package **only** because `-m` puts the working directory on `sys.path`.
-When a client does not apply `cwd` — and some launch paths do not — the server
-dies instantly with `ModuleNotFoundError: No module named 'app'`, before the
-handshake, so no per-server log is ever written and all the client can tell you
-is *"Server disconnected"* or *"Connection closed"*.
+`python -m app.mcp.server` finds the `app` package **only** because `-m` puts
+the working directory on `sys.path`. Without the editable install, the server
+therefore depends on the client setting `cwd` to the repo — and some launch
+paths do not set it. When that happens the process dies before the handshake
+with `ModuleNotFoundError: No module named 'app'`, so no per-server log is
+written and all the client can tell you is *"Server disconnected"* or
+*"Connection closed"*. The editable install puts `app` on the interpreter's path
+permanently, so the working directory stops mattering at all.
 
-`scripts/mcp_stdio.sh` resolves its own location, so cwd, PATH and the inherited
-environment all stop mattering. Run `./scripts/diagnose_mcp.sh` if it still will
-not start; check 4b reproduces the failure above deliberately.
+Verify it the way the client will launch it — from a directory with nothing to
+do with the repo:
+
+```bash
+cd / && printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"t","version":"0"}}}' \
+  | "/Users/deepakbanavathu/Desktop/Legafy Ai/legafy-ai/.venv/bin/python" -m app.mcp.server | head -c 120
+```
+
+A line starting `{"jsonrpc"` and naming `legafy-ai` means the cwd problem is
+gone. Run `./scripts/diagnose_mcp.sh` if it still will not start.
+
+> **`scripts/mcp_stdio.sh` — kept, not recommended.** The launcher resolves its
+> own location and solves the same problem without the install, which is why it
+> exists. On at least one macOS setup Claude Desktop refused to execute it —
+> `bash: ...mcp_stdio.sh: Operation not permitted` — with no quarantine
+> attribute present and no cause we could confirm. It remains in the repo for
+> environments where the editable install is not an option; if you use it, point
+> `command` at it and delete `args`, `cwd` and `env` entirely.
 
 Use absolute paths — Claude Desktop does not expand `~` and does not inherit
 your shell's `PATH`. Quit Claude Desktop completely (Cmd-Q, not just the window)

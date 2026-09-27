@@ -419,7 +419,6 @@ space in the path is fine inside JSON quotes:
     "legafy-sandbox": {
       "command": "/Users/deepakbanavathu/Desktop/Legafy Ai/legafy-ai/.venv/bin/python",
       "args": ["-m", "app.mcp.server"],
-      "cwd": "/Users/deepakbanavathu/Desktop/Legafy Ai/legafy-ai",
       "env": { "...": "the rest as printed by sandbox.sh" }
     }
   }
@@ -429,9 +428,13 @@ space in the path is fine inside JSON quotes:
 Windows uses `\\` (doubled) inside JSON strings and `Scripts` instead of `bin`:
 
 ```json
-"command": "C:\\Users\\you\\Projects\\legafy-ai\\.venv\\Scripts\\python.exe",
-"cwd": "C:\\Users\\you\\Projects\\legafy-ai"
+"command": "C:\\Users\\you\\Projects\\legafy-ai\\.venv\\Scripts\\python.exe"
 ```
+
+No `cwd` in either example. `pip install -e .` makes the working directory
+irrelevant; skip that install and a client that does not set `cwd` fails with
+`ModuleNotFoundError: No module named 'app'` and shows you only *"Server
+disconnected"*.
 
 You should now see the tools under the connector icon. If you see nothing, §6.
 

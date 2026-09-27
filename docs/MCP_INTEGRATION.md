@@ -94,7 +94,6 @@ Two modes, same tools:
     "legafy-ai": {
       "command": "/absolute/path/to/legafy-ai/.venv/bin/python",
       "args": ["-m", "app.mcp.server"],
-      "cwd": "/absolute/path/to/legafy-ai",
       "env": {
         "LEGAFY_MCP_MODE": "local",
         "LEGAFY_ENV": "development",
@@ -106,6 +105,12 @@ Two modes, same tools:
   }
 }
 ```
+
+There is no `cwd` key, and that is deliberate: `pip install -e .` puts `app` on
+the interpreter's path, so the server starts correctly from any working
+directory. Without that install, a client that does not set `cwd` gets
+`ModuleNotFoundError: No module named 'app'` before the handshake and reports
+only *"Server disconnected"*.
 
 Restart Claude Desktop. The tools appear under the connector icon.
 

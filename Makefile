@@ -20,6 +20,7 @@ install: ## Create a venv and install runtime + dev dependencies
 	$(PY) -m venv $(VENV)
 	$(PIP) install --upgrade pip
 	$(PIP) install -r requirements-dev.txt
+	$(PIP) install -e .
 
 lint: ## Run ruff check
 	$(VENV)/bin/ruff check .

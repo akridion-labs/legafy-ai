@@ -90,6 +90,7 @@ here needs it — these are the commands `make` runs:
 ```bash
 python3 -m venv .venv                              # Windows: python -m venv .venv
 .venv/bin/pip install -r requirements-dev.txt      # Windows: .venv\Scripts\pip install -r requirements-dev.txt
+.venv/bin/pip install -e .                         # Windows: .venv\Scripts\pip install -e .
 .venv/bin/pytest -q                                # Windows: .venv\Scripts\pytest -q
 .venv/bin/uvicorn app.main:app --reload            # Windows: .venv\Scripts\uvicorn app.main:app --reload
 ```
