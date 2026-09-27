@@ -107,21 +107,28 @@ Edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
 ```json
 {
   "mcpServers": {
-    "legafy-ai": {
-      "command": "/Users/deepakbanavathu/Desktop/Legafy Ai/legafy-ai/.venv/bin/python",
-      "args": ["-m", "app.mcp.server"],
-      "cwd": "/Users/deepakbanavathu/Desktop/Legafy Ai/legafy-ai",
-      "env": {
-        "LEGAFY_MCP_MODE": "local",
-        "LEGAFY_ENV": "development",
-        "LEGAFY_LOG_LEVEL": "DEBUG",
-        "LEGAFY_PROVIDER_CHAIN": "offline",
-        "LEGAFY_TELEMETRY_SALT": "dev-salt-change-before-production"
-      }
+    "legafy": {
+      "command": "/Users/deepakbanavathu/Desktop/Legafy Ai/legafy-ai/scripts/mcp_stdio.sh"
     }
   }
 }
 ```
+
+**One line, and no `args`, `cwd` or `env`.** That is deliberate, and it is the
+fix for a real failure rather than a stylistic preference.
+
+The obvious config points `command` at `.venv/bin/python` with
+`args: ["-m","app.mcp.server"]` and `cwd` set to the repo. It works when you run
+it yourself and fails in the app, because `python -m app.mcp.server` finds the
+`app` package **only** because `-m` puts the working directory on `sys.path`.
+When a client does not apply `cwd` — and some launch paths do not — the server
+dies instantly with `ModuleNotFoundError: No module named 'app'`, before the
+handshake, so no per-server log is ever written and all the client can tell you
+is *"Server disconnected"* or *"Connection closed"*.
+
+`scripts/mcp_stdio.sh` resolves its own location, so cwd, PATH and the inherited
+environment all stop mattering. Run `./scripts/diagnose_mcp.sh` if it still will
+not start; check 4b reproduces the failure above deliberately.
 
 Use absolute paths — Claude Desktop does not expand `~` and does not inherit
 your shell's `PATH`. Quit Claude Desktop completely (Cmd-Q, not just the window)

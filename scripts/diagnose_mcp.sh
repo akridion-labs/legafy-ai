@@ -149,6 +149,40 @@ else
 fi
 rm -f "$SOUT" "$SERR"
 
+# ---------------------------------------------------------------- 4b. cwd
+hdr "4b. The same launch WITHOUT the working directory applied"
+say "  \`python -m app.mcp.server\` finds the app package only because -m puts the"
+say "  working directory on sys.path. If a client does not apply \"cwd\", the server"
+say "  dies instantly with ModuleNotFoundError and the client just says"
+say "  \"Connection closed\". This is the blind spot that cost us an afternoon."
+COUT="$(mktemp)"; CERR="$(mktemp)"
+if (cd / && printf '%s\n' "$REQ" | LEGAFY_MCP_MODE=local LEGAFY_ENV=development \
+      LEGAFY_PROVIDER_CHAIN=offline LEGAFY_TELEMETRY_SALT=diagnostic-salt \
+      "$PY" -m app.mcp.server >"$COUT" 2>"$CERR") && [ "$(head -c 1 "$COUT")" = "{" ]; then
+  ok "survives even without cwd"
+else
+  warn "dies without cwd — expected for the bare-python config, and exactly why"
+  warn "scripts/mcp_stdio.sh exists. Point the client at that instead:"
+  say "          \"command\": \"$REPO/scripts/mcp_stdio.sh\""
+  say "        and delete \"args\", \"cwd\" and \"env\" from the entry."
+  tail -3 "$CERR" | sed 's/^/        /'
+fi
+rm -f "$COUT" "$CERR"
+
+hdr "4c. The launcher script, which depends on none of the above"
+if [ -x "$REPO/scripts/mcp_stdio.sh" ]; then
+  LOUT="$(mktemp)"
+  if (cd / && printf '%s\n' "$REQ" | env -i HOME="$HOME" PATH=/usr/bin:/bin \
+        "$REPO/scripts/mcp_stdio.sh" >"$LOUT" 2>/dev/null) && [ "$(head -c 1 "$LOUT")" = "{" ]; then
+    ok "works from / with no environment at all — use this in the config"
+  else
+    bad "the launcher itself failed, which should not happen"
+  fi
+  rm -f "$LOUT"
+else
+  warn "scripts/mcp_stdio.sh is missing or not executable (chmod +x it)"
+fi
+
 # ---------------------------------------------------------------- 5. claude's log
 hdr "5. What Claude Desktop itself recorded"
 if [ -d "$LOG_DIR" ]; then
