@@ -62,7 +62,7 @@ fi
 
 # ---------------------------------------------------------------- 2. imports
 hdr "2. Can the server's dependencies be imported?"
-IMPORT_ERR="$("$PY" - <<'PY' 2>&1
+if IMPORT_ERR="$("$PY" - <<'PY' 2>&1
 import sys
 failed = []
 for mod in ("mcp", "pydantic", "pydantic_core", "httpx", "anyio", "docx"):
@@ -77,8 +77,7 @@ import pydantic
 from importlib.metadata import version
 print(f"mcp {version('mcp')} | pydantic {pydantic.VERSION} | python {sys.version.split()[0]}")
 PY
-)"
-if [ $? -eq 0 ]; then
+)"; then
   ok "$IMPORT_ERR"
 else
   bad "a dependency will not import — this is very likely your answer"
@@ -138,11 +137,11 @@ hdr "4. The same launch with a stripped environment"
 say "  Claude Desktop does not hand a spawned server your Terminal's environment."
 say "  If check 3 passed and this one fails, that difference is your answer."
 SOUT="$(mktemp)"; SERR="$(mktemp)"
-printf '%s\n' "$REQ" | env -i HOME="$HOME" PATH=/usr/bin:/bin \
+if printf '%s\n' "$REQ" | env -i HOME="$HOME" PATH=/usr/bin:/bin \
   LEGAFY_MCP_MODE=local LEGAFY_ENV=development \
   LEGAFY_PROVIDER_CHAIN=offline LEGAFY_TELEMETRY_SALT=diagnostic-salt \
-  "$PY" -m app.mcp.server >"$SOUT" 2>"$SERR"
-if [ $? -eq 0 ] && [ "$(head -c 1 "$SOUT")" = "{" ]; then
+  "$PY" -m app.mcp.server >"$SOUT" 2>"$SERR" &&
+   [ "$(head -c 1 "$SOUT")" = "{" ]; then
   ok "works with no inherited environment too"
 else
   bad "fails without your Terminal's environment — that is the difference"
