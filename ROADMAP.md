@@ -62,6 +62,26 @@ engineering changes that.
 > **Metric:** hours per instrument. **Falsified if:** > 8 hours, in which case
 > the six-state promise needs re-planning before another feature is added.
 > **Cost:** one afternoon. **Code required: none.**
+>
+> **Run on 2026-09-27 — half answered. See `docs/verification/TG-SE-1988.md`.**
+> Evidence gathering took **5.3 minutes**: both primary sources read end to end,
+> every section extracted, India Code cross-checked. That is not the answer. The
+> run split the cost in two and showed the cheap half was the half being
+> measured.
+>
+> Three things it did establish. **Neither official host can be automated** —
+> the Telangana portal returns 403 to a fetch and India Code disallows it in
+> robots, so every instrument needs a browser session and bulk ingestion across
+> six states is not on the table. **Transcription is minutes.** And **the real
+> cost is adjudication**: the very first instrument produced a discrepancy no
+> validator could catch — the state's own portal publishes the un-adapted Andhra
+> Pradesh text, short title and all, under a Telangana heading — and resolving
+> it needs a lawyer.
+>
+> **Assumption 1 remains unanswered, and the gate below still holds.** What
+> changed is that it is now asked precisely: six specific questions in §6 of the
+> packet, waiting on a named reviewer. The metric was always the reviewer's
+> hours; nobody had separated them from the typing before.
 
 **2. Someone will pay for a pre-counsel screen.** Level 1 today.
 
