@@ -176,6 +176,53 @@ model-agnostic. With no provider configured it returns English and says
 
 ---
 
+## 4b. Authority is not currency — a known hole
+
+Found on 2026-09-27 while verifying TG-SE-1988. Recorded here because it is a
+defect in this document's model, not in the Telangana data.
+
+The Telangana Labour Department publishes the **superseded** text of its own
+Shops and Establishments Act. The government adapted the Act in February 2016
+with retrospective effect from June 2014 (G.O.Ms.No.5 dated 01-02-2016); the
+department's page still serves the pre-adaptation text, naming Andhra Pradesh in
+the short title and giving 1 November rather than 2 June as the formation-day
+holiday employers must grant.
+
+Every check we own passes on that page:
+
+| Check | Result on the stale page |
+|---|---|
+| Official host | passes — `labour.telangana.gov.in` |
+| On the jurisdiction whitelist | passes |
+| HTTPS, no off-host redirect | passes |
+| `verify_source_health` | passes — 0 errors across 49 URLs |
+| Authority tier assigned | **1.00**, the highest we award |
+
+Meanwhile the correct current text was found on Indian Kanoon, which we score
+**0.25** and place below the citable floor.
+
+**The model ranks who published a document and never asks when.** A ministry
+page that has not been touched since before the instrument it describes was
+amended still scores full marks, and nothing in the pipeline notices. The
+citable floor protects against low-quality sources; it offers no protection at
+all against a high-quality source that has gone stale — which is the more
+dangerous failure, because it is the one that looks correct.
+
+**Not yet fixed.** Options, none costed:
+
+- Carry a `last_confirmed` date per proof and decay authority with age, so an
+  unconfirmed tier-1.00 page eventually falls below the citable floor by itself.
+- Treat "the instrument has a known amending instrument dated after this page's
+  last-modified" as an ERROR in `verify_source_health`, not a WARN.
+- Have the source watcher flag pages that have *not* changed across a window in
+  which the underlying instrument did — absence of change as a signal, rather
+  than presence of it.
+
+The first is probably the lazy one and the only one that generalises. It is not
+scheduled; assumption 1 in `ROADMAP.md` still gates new capability.
+
+---
+
 ## 5. The token budget
 
 An MCP tool result is pasted into the model's context on **every call**. The full

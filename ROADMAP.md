@@ -63,25 +63,42 @@ engineering changes that.
 > the six-state promise needs re-planning before another feature is added.
 > **Cost:** one afternoon. **Code required: none.**
 >
-> **Run on 2026-09-27 — half answered. See `docs/verification/TG-SE-1988.md`.**
-> Evidence gathering took **5.3 minutes**: both primary sources read end to end,
-> every section extracted, India Code cross-checked. That is not the answer. The
-> run split the cost in two and showed the cheap half was the half being
-> measured.
+> **Run on 2026-09-27, two passes. See `docs/verification/TG-SE-1988.md`.**
+> **~13 minutes of research.** Both primary sources read end to end, every
+> section extracted, India Code cross-checked, and the amending instrument
+> traced and read.
 >
-> Three things it did establish. **Neither official host can be automated** —
-> the Telangana portal returns 403 to a fetch and India Code disallows it in
-> robots, so every instrument needs a browser session and bulk ingestion across
-> six states is not on the table. **Transcription is minutes.** And **the real
-> cost is adjudication**: the very first instrument produced a discrepancy no
-> validator could catch — the state's own portal publishes the un-adapted Andhra
-> Pradesh text, short title and all, under a Telangana heading — and resolving
-> it needs a lawyer.
+> Pass 1 found a contradiction: the Telangana Labour Department publishes the
+> un-adapted Andhra Pradesh text — wrong short title, wrong state, and
+> 1 November as the formation-day holiday — under a Telangana heading. It
+> concluded a lawyer was needed to say which text governs.
 >
-> **Assumption 1 remains unanswered, and the gate below still holds.** What
-> changed is that it is now asked precisely: six specific questions in §6 of the
-> packet, waiting on a named reviewer. The metric was always the reviewer's
-> hours; nobody had separated them from the typing before.
+> Pass 2 went and found the document. **G.O.Ms.No.5 dated 01-02-2016**, made
+> under s.101 of the AP Reorganisation Act 2014, adapts the Act to Telangana
+> with retrospective effect from 02-06-2014; clause 6(6) substitutes
+> **2 June (Telangana Formation Day)** for 1 November. The question was never a
+> matter of legal judgement. It was a document nobody had looked for.
+>
+> **What this revises.** Pass 1's conclusion — that the expensive half is
+> adjudication — was wrong, or at least premature. Tracing an amending
+> instrument is also minutes. What genuinely remains for a reviewer is narrow:
+> one official-host confirmation of a document we can already name, one
+> amendment sweep, three scoped lookups. None of it needs an opinion; it needs
+> someone with the authority to sign.
+>
+> **Two findings with consequences beyond this instrument.** Neither official
+> host can be automated — the state portal 403s and India Code disallows robots
+> — so bulk ingestion across six states is off the table. And **a tier-1.00
+> source was a decade stale while every check we own passed**: the correct
+> current text came from an aggregator we score 0.25 and place below the citable
+> floor. Authority ranks who published a page, not when. See
+> `docs/SEARCH_AND_FRESHNESS.md`.
+>
+> **Assumption 1 is provisionally answered and the gate still holds.** The shape
+> looks like minutes of research plus a signature, not an afternoon — but that
+> is one instrument, the best-documented one, and the signature has still never
+> happened. Next: run a messier instrument (TG-PT-1987, whose slabs move by
+> notification) and see whether the shape survives a sample of two.
 
 **2. Someone will pay for a pre-counsel screen.** Level 1 today.
 
