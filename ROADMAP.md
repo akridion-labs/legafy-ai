@@ -100,6 +100,35 @@ engineering changes that.
 > happened. Next: run a messier instrument (TG-PT-1987, whose slabs move by
 > notification) and see whether the shape survives a sample of two.
 
+> **Second instrument, TG-PT-1987, run the same day. See
+> `docs/verification/TG-PT-1987.md`. 2.1 minutes, measured, one pass.**
+>
+> It was chosen because profession-tax slabs move by notification and it should
+> have been the harder case. It was less than half the cost — and the reason is
+> the finding. **The Commercial Taxes Department maintains its portal and the
+> Labour Department does not.** Same state, both instruments adapted under the
+> same section of the same Reorganisation Act; one publishes its Act, its
+> Schedule and 50 dated G.O. entries and answers every request, the other 403s
+> and serves a decade-old text.
+>
+> **The variable that predicts cost is the publishing department, not the
+> instrument.** Per-state estimates are therefore the wrong unit, and the
+> planning input we actually need is a one-off per-department source-quality
+> survey before any number is attached to the 44.
+>
+> The run also found two defects in our own entry: `pt_remittance` describes the
+> rates as coming from a notification when they are in the First Schedule to the
+> Act, and `applies_when` may be too narrow, since Entry 40 catches anyone with
+> annual income above a threshold and the turnover entries catch contractors
+> with no employees. A single-founder company with no payroll may be liable.
+> Same class of error as the night-shift summary in TG-SE-1988: our prose
+> describing a mechanism the instrument does not use.
+>
+> **Still unmeasured after two instruments: the reviewer's signature.** It has
+> never happened once. No estimate covering all 44 should be offered until it
+> has, and neither instrument sampled a fragmented publisher landscape or a
+> municipally administered levy — Kerala's profession tax being the known case.
+
 **2. Someone will pay for a pre-counsel screen.** Level 1 today.
 
 > **Experiment:** a concierge MVP. Run five screens by hand for five real
