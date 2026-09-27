@@ -7,9 +7,9 @@ name = "legafy-ai"
 version = "1.0.0"
 description = "Legafy AI — model-agnostic pre-counsel compliance scaffolding engine (Akridion Labs)"
 readme = "README.md"
-requires-python = ">=3.11,<3.14"
+requires-python = ">=3.11,<3.15"   # 3.14 is tested in CI and is what the Mac runs
 license = { text = "Apache-2.0" }
-authors = [{ name = "Akridion Labs LLP" }]
+authors = [{ name = "Akridion Labs" }]
 keywords = ["legal-tech", "compliance", "mcp", "fastapi", "dpdp", "india"]
 
 [tool.setuptools.packages.find]

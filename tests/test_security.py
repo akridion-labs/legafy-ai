@@ -862,3 +862,34 @@ def test_pins_are_exact_not_floating():
             if not line or line.startswith("-"):
                 continue
             assert re.search(r"==\s*\d", line), f"{name}: {line!r} is not pinned exactly"
+
+
+def test_packaging_metadata_covers_every_python_ci_tests():
+    """pyproject must not exclude a version the project claims and tests.
+
+    `requires-python` said `<3.14` while CI tested 3.14 and the Mac it is
+    developed on runs 3.14.6 — so `pip install .` or `pip install -e .` was
+    refused on the very interpreter the docs tell people to use, with a message
+    about the Python version that sounds like their machine is wrong.
+    """
+    import pathlib
+    import tomllib
+
+    from packaging.specifiers import SpecifierSet
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    spec = SpecifierSet(
+        tomllib.loads((root / "pyproject.toml").read_text())["project"]["requires-python"]
+    )
+
+    yaml = pytest.importorskip("yaml")
+    ci = yaml.safe_load((root / ".github/workflows/ci.yml").read_text())
+    matrix = ci["jobs"]["test"]["strategy"]["matrix"]["python-version"]
+    assert matrix, "the test matrix is empty"
+
+    for version in matrix:
+        # A bare "3.14" is not a full version; check the .0 of that series.
+        assert f"{version}.0" in spec, (
+            f"CI tests Python {version} but pyproject's requires-python ({spec}) "
+            f"excludes it — `pip install .` would be refused on that interpreter"
+        )
