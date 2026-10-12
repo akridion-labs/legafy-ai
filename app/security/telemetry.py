@@ -24,6 +24,7 @@ from pathlib import Path
 
 from app.config import get_settings
 from app.models.schemas import AuditVaultRecord, Lane, TenantContext
+from app.security.clients import get_client
 
 logger = logging.getLogger(__name__)
 
@@ -125,6 +126,10 @@ class AuditVault:
         provider_used: str | None = None,
         outcome: str = "OK",
     ) -> AuditVaultRecord:
+        # Self-reported by the calling AI client in the MCP handshake. Recorded
+        # as usage evidence only — see app/security/clients.py. It never
+        # influences the lane, the tier, or what any tool returns.
+        client = get_client()
         async with self._lock:
             seq = self._seq + 1
             payload: dict = {
@@ -144,8 +149,15 @@ class AuditVault:
                 "red_signal_ids": list(red_signal_ids or []),
                 "provider_used": provider_used,
                 "outcome": outcome,
+                "client_name": client["client_name"],
+                "client_version": client["client_version"],
+                "client_family": client["client_family"],
                 "prev_hash": self._prev_hash,
-                "schema_version": 1,
+                # 2 added the three client_* fields. Records written at 1 have
+                # none of them and still verify: the chain hashes whatever keys
+                # a record actually carries, so the history stays intact and
+                # must not be rewritten to backfill them.
+                "schema_version": 2,
             }
             record_hash = hashlib.sha256(self._canonical_bytes(payload)).hexdigest()
             payload["record_hash"] = record_hash
@@ -193,6 +205,53 @@ class AuditVault:
         if limit is not None:
             records = records[-limit:]
         return records
+
+    def client_breakdown(self) -> dict:
+        """Which AI clients have actually called this server, and how often.
+
+        The product question this vault could not answer before: is anyone
+        outside Claude Desktop using Legafy at all?
+
+        `unidentified` counts calls with no `clientInfo` — chiefly records
+        written before this was captured, plus any client that sends none.
+        `unmapped_names` lists raw names that fell through `CLIENT_FAMILIES`;
+        a name appearing there is the signal to add a row to that table, and
+        is the only sanctioned way to extend it.
+        """
+        families: dict[str, int] = {}
+        names: dict[str, int] = {}
+        unmapped: dict[str, int] = {}
+        unidentified = 0
+        lanes_by_family: dict[str, dict[str, int]] = {}
+
+        for record in self.read_records():
+            name = record.get("client_name")
+            if not name:
+                unidentified += 1
+                continue
+            family = record.get("client_family") or "unknown"
+            families[family] = families.get(family, 0) + 1
+            label = f"{name} {record.get('client_version') or ''}".strip()
+            names[label] = names.get(label, 0) + 1
+            if family == "unknown":
+                unmapped[name] = unmapped.get(name, 0) + 1
+            lane = record.get("traffic_light_lane") or "UNKNOWN"
+            lanes_by_family.setdefault(family, {})
+            lanes_by_family[family][lane] = lanes_by_family[family].get(lane, 0) + 1
+
+        return {
+            "total_records": self._record_count,
+            "identified": sum(families.values()),
+            "unidentified": unidentified,
+            "by_family": dict(sorted(families.items(), key=lambda kv: -kv[1])),
+            "by_name": dict(sorted(names.items(), key=lambda kv: -kv[1])),
+            "lanes_by_family": lanes_by_family,
+            "unmapped_names": dict(sorted(unmapped.items(), key=lambda kv: -kv[1])),
+            "note": (
+                "Client identity is self-reported in the MCP handshake and is not "
+                "verified. These counts are usage evidence, not an access record."
+            ),
+        }
 
     def verify_chain(self) -> tuple[bool, str | None]:
         """Walk the file front-to-back, recomputing and re-linking every hash."""

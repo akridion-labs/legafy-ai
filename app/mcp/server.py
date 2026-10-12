@@ -29,6 +29,7 @@ from contextvars import ContextVar
 from datetime import date
 
 from app.models.schemas import LicenseTier, TenantContext
+from app.security.clients import get_client, set_client
 from app.tools import TOOLS, TOOLS_BY_NAME
 
 log = logging.getLogger("legafy.mcp")
@@ -92,10 +93,19 @@ async def _dispatch_remote(name: str, payload: dict) -> dict:
 
     base = os.environ["LEGAFY_REMOTE_URL"].rstrip("/")
     token = os.environ.get("LEGAFY_API_TOKEN", "")
+    # Forward whoever called this bridge, so the hosted vault attributes the
+    # call to Codex or Claude rather than to the bridge process. Self-reported
+    # and unverified at both ends — it is telemetry, never authorisation.
+    identity = get_client()
+    headers = {"Authorization": f"Bearer {token}"}
+    if identity["client_name"]:
+        headers["X-Legafy-Client"] = identity["client_name"]
+    if identity["client_version"]:
+        headers["X-Legafy-Client-Version"] = identity["client_version"]
     async with httpx.AsyncClient(timeout=httpx.Timeout(600.0, connect=10.0)) as client:
         resp = await client.post(
             f"{base}/tools/{name}/invoke",
-            headers={"Authorization": f"Bearer {token}"},
+            headers=headers,
             json=payload,
         )
     if resp.status_code >= 400:
@@ -133,10 +143,31 @@ def build_server():
             for t in TOOLS
         ]
 
+    def _record_calling_client() -> None:
+        """Pick the client's self-reported identity off the open session.
+
+        `clientInfo` arrives once, in the `initialize` handshake, and the SDK
+        keeps it on the session — so it is read here per call rather than
+        hooked onto initialize, which the lowlevel server does not expose.
+
+        Wrapped because none of this may ever break a grounding call:
+        `request_context` raises LookupError outside a request, and a client is
+        free to send no `clientInfo` at all. Unattributed telemetry is a gap in
+        a report; a raised exception here would be a refused legal answer.
+        """
+        try:
+            params = server.request_context.session.client_params
+        except (LookupError, AttributeError):
+            return
+        info = getattr(params, "clientInfo", None)
+        if info is not None:
+            set_client(getattr(info, "name", None), getattr(info, "version", None))
+
     @server.call_tool()
     async def call_tool(name: str, arguments: dict) -> tuple[list[TextContent], dict]:
         if name not in TOOLS_BY_NAME:
             raise ValueError(f"Unknown tool {name!r}")
+        _record_calling_client()
         try:
             result = await dispatch(name, arguments or {})
         except Exception as exc:

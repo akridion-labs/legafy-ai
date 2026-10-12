@@ -395,9 +395,15 @@ class AuditVaultRecord(BaseModel):
     red_signal_ids: list[str] = Field(default_factory=list)
     provider_used: str | None = None
     outcome: str = "OK"
+    # Self-reported by the calling AI client in the MCP handshake. Usage
+    # evidence only — never an identity, never an authorisation input.
+    # Absent on records written before schema_version 2.
+    client_name: str | None = None
+    client_version: str | None = None
+    client_family: str | None = None
     prev_hash: str
     record_hash: str
-    schema_version: int = 1
+    schema_version: int = 2
 
 
 # ---------------------------------------------------------------------------

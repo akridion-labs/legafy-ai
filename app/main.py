@@ -33,6 +33,7 @@ from app.models.schemas import (
     TenantContext,
 )
 from app.providers.router import get_router
+from app.security.clients import client_context
 from app.security.telemetry import digest_is_degraded, get_audit_vault
 from app.security.tenancy import (
     ExpiredToken,
@@ -245,7 +246,15 @@ async def invoke_tool(tool_name: str, payload: dict, request: Request):
         return _error(404, "unknown_tool", f"No tool named {tool_name!r}", request,
                       {"available": sorted(TOOLS_BY_NAME)})
     tenant, snapshot = await authenticate(request.headers.get("authorization"), spec.required_scope)
-    result = await spec.handler(payload, request_id=request.state.request_id, tenant=tenant)
+    # The stdio bridge (LEGAFY_MCP_MODE=remote) forwards the client that called
+    # IT, so a bridged call is attributed to Codex or Claude rather than to the
+    # bridge. Scoped to this request: one process serves many callers, and a
+    # leaked ContextVar would attribute the next one to the previous caller.
+    with client_context(
+        request.headers.get("x-legafy-client"),
+        request.headers.get("x-legafy-client-version"),
+    ):
+        result = await spec.handler(payload, request_id=request.state.request_id, tenant=tenant)
     return {"success": True, "tool": tool_name, "result": result,
             "rate_limit": snapshot.model_dump()}
 
@@ -292,6 +301,16 @@ async def jurisdictions(auth=Depends(require("audit"))) -> dict:
 async def verify_vault(auth=Depends(require("audit"))) -> dict:
     ok, reason = get_audit_vault().verify_chain()
     return {"intact": ok, "reason": reason, "records": get_audit_vault().record_count()}
+
+
+@app.get("/api/v1/audit-vault/clients", tags=["compliance"])
+async def vault_clients(auth=Depends(require("audit"))) -> dict:
+    """Which AI clients have called this server, and how often.
+
+    Usage evidence, not an access log: client identity is self-reported in the
+    MCP handshake and never verified.
+    """
+    return get_audit_vault().client_breakdown()
 
 
 # --- Remote MCP (Streamable HTTP) -----------------------------------------

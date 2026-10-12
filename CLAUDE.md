@@ -22,6 +22,8 @@ app/
   providers/           model-agnostic router: anthropic | openai | ollama | offline
   pipeline/            anti-truncation chunk assembly → Markdown → DOCX
   mcp/server.py        MCP stdio server exposing the same tools
+  security/clients.py  which AI client called — recorded as usage evidence only,
+                       self-reported in the handshake, never an authorisation input
 data/jurisdictions/    one JSON file per isolated code path (IN-TG, IN-AP, IN-KL, …)
                        adding one: docs/ADDING_A_JURISDICTION.md — assume NOTHING
 generated/             runtime output + audit vault (gitignored, never committed)
@@ -112,6 +114,7 @@ machine-readable legal data actually exists in India,
 `docs/POSITIONING_VS_LEGAL_PLUGIN.md` for how this sits next to Anthropic's
 `legal` plugin, `docs/INSTALL_ANY_PLATFORM.md` for the two install paths,
 `docs/LOCAL_TESTING.md` to run it on a Mac,
+`docs/CLIENT_SUPPORT.md` for Codex/ChatGPT setup and per-client usage tracking,
 `docs/TESTING_PLAYBOOK.md` to hand to a tester (including one abroad), `SECURITY.md` for the audit findings and the assumptions this system
 refuses to make, and `docs/SEARCH_DESIGN.md` for the retrieval cascade.
 
