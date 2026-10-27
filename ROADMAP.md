@@ -188,6 +188,65 @@ justify building something instead.
 
 ---
 
+## Kill criteria (set 27 Oct 2026)
+
+Added because nothing in this repository could previously fail. A project that
+cannot fail cannot be steered, and every section above this one described how to
+continue.
+
+Each condition below is checkable by a stranger with a shell and no judgement.
+**If all three fail on the deadline, Legafy stops being built as a product: no
+new features ship, the repository freezes, and anything kept runs as a private
+tool only.** Reaching any one of them buys the next window, not the project.
+
+### K1 — one instrument is verified by a named human, by 15 Dec 2026
+
+```bash
+grep -l '"verification_status": "VERIFIED"' data/jurisdictions/*.json | wc -l
+```
+
+**Passes at ≥ 1.** The file must carry the reviewer's name and the date, per
+`docs/ADDING_A_JURISDICTION.md` §7. This is assumption 1, open since 22 Sep. The
+experiment that settles it is `docs/DECISION_2026-10-27.md` §5 and needs no code.
+
+### K2 — somebody who is not Deepak uses it, by 15 Dec 2026
+
+```bash
+curl -s -H "Authorization: Bearer $TOKEN" \
+  http://127.0.0.1:8000/api/v1/audit-vault/clients | python3 -m json.tool
+```
+
+**Passes at ≥ 3 distinct `client_name` values from machines that are not
+Deepak's, each with ≥ 10 calls.** Self-reported and unverified by design — but
+nobody is trying to cheat this, and the current figure is one client, four
+calls, which is his own agent mode.
+
+### K3 — the builder actually uses it, by 30 Nov 2026
+
+```bash
+python3 -c "
+import json; from collections import Counter
+r=[json.loads(l) for l in open('generated/akrigon_audit_vault.json') if l.strip()]
+print('calls', len(r), 'distinct days', len(Counter(x['recorded_at'][:10] for x in r)))"
+```
+
+**Passes at ≥ 40 calls across ≥ 10 distinct days.** This is the honest test of
+"we are using it locally for ourselves." At 27 Oct the lifetime figure is **12
+calls across 3 days in 60 days**. The claim and the measurement disagree, and
+K3 exists so that disagreement resolves on a date rather than in an argument.
+
+### Standing rule
+
+K1 is the only one that unlocks selling anything. K3 is the only one that can be
+passed without another person's cooperation — which is also why failing K3 is
+the most informative outcome of the three.
+
+No feature, instrument, transport or integration ships before 15 Dec except the
+experiment in `docs/DECISION_2026-10-27.md` §5. Work that does not move K1, K2
+or K3 is not work.
+
+---
+
 ## Where we are
 
 Shipped and verified in v1.0.0:
