@@ -230,10 +230,25 @@ r=[json.loads(l) for l in open('generated/akrigon_audit_vault.json') if l.strip(
 print('calls', len(r), 'distinct days', len(Counter(x['recorded_at'][:10] for x in r)))"
 ```
 
-**Passes at ≥ 40 calls across ≥ 10 distinct days.** This is the honest test of
-"we are using it locally for ourselves." At 27 Oct the lifetime figure is **12
-calls across 3 days in 60 days**. The claim and the measurement disagree, and
-K3 exists so that disagreement resolves on a date rather than in an argument.
+**Passes at ≥ 40 calls across ≥ 10 distinct days**, measured as a **delta from
+the baseline below**. This is the honest test of "we are using it locally for
+ourselves." At 27 Oct the lifetime figure was **12 calls across 3 days in 60
+days**. The claim and the measurement disagree, and K3 exists so that
+disagreement resolves on a date rather than in an argument.
+
+> **Baseline, 28 Oct 2026: 16 calls, 4 distinct days.** K3 passes at ≥ 56
+> lifetime calls across ≥ 14 distinct days.
+>
+> Corrected because the metric was contaminated the day after it was written.
+> Two of the 16 are Claude probes run while reproducing a bug, and they carry
+> `client_name: local-agent-mode-legafy` — **the same value as the operator's
+> own calls**, because a probe routed through the desktop bridge reaches the
+> same local connector. They cannot be separated after the fact.
+>
+> The lesson generalises: client attribution distinguishes *connectors*, not
+> *operators*. Any future metric that needs to exclude assisted calls must be a
+> delta from a recorded baseline, not a lifetime count. See the 28 Oct addendum
+> to `docs/DECISION_2026-10-27.md`, Finding 6.
 
 ### Standing rule
 
